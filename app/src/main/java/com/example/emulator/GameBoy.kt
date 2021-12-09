@@ -3,7 +3,7 @@ import java.io.File
 import java.io.FileOutputStream
 import java.time.Duration
 import java.time.Instant
-import java.io.InputStream
+
 // Gameboy starting address is 0x0100
 var START_ADDRESS = 0x0100
 /*
@@ -69,53 +69,6 @@ class GameBoy {
         }
     }
      */
-    // Print memory contents for debugging
-    fun printMemoryToFile() {
-        // Print to csv file memorylog.csv
-        print("Writing to file...\n")
-        var progress = 0
-        val file = File("C:\\Users\\skpun\\Desktop\\memorylog.csv")
-        val start = java.time.Instant.now()
-        var end = java.time.Instant.now()
-        var flag = 0
-        FileOutputStream(file).use {
-            for ((index, i) in memory.withIndex()) {
-                if (index % 52428 == 0 && index != 0) {
-                    if (flag == 0) {
-                        end = java.time.Instant.now()
-                        flag = 1
-                    }
-                    progress += 5
-                    val duration = Duration.between(start, end)
-                    var remaining =
-                        duration.multipliedBy(((100 - progress) / 5).toLong()).toSeconds()
-                    print(progress)
-                    print("% done (")
-                    print(remaining)
-                    print(" seconds remaining)\n")
-                }
-                if (index % 30 == 0) {
-                    //println()
-                    file.appendText("\n")
-                }
-                file.appendText(java.lang.Integer.toHexString(index))
-                file.appendText("=>")
-                file.appendText(java.lang.Integer.toHexString(i.toUByte().toInt()))
-                file.appendText(",")
-            }
-        }
-    }
-    fun printMemoryToConsole() {
-        for ((index, i) in memory.withIndex()) {
-            if (index % 20 == 0) {
-                println()
-            }
-            print("\t\t\t")
-            print(java.lang.Integer.toHexString(index))
-            print("=>")
-            print(java.lang.Integer.toHexString(i.toUByte().toInt())) // Convert Byte -> uByte -> Integer -> Hex String for print() to print unsigned bytes
-        }
-    }
     // Fetch current instruction (opcode) from memory at the address pointed by the program counter, and increase program counter
     fun fetch() {
         opcode[0] = (memory[regPC].toInt())
@@ -127,14 +80,79 @@ class GameBoy {
          */
         regPC += 2
     }
-
+    // Decode current instruction (opcode)
     fun decode() {
         //when(opcode[0])
     }
-
+    // Load ROM into memory
     fun loadRom(rompath: String) {
-        var file = File(rompath)
+        val file = File(rompath)
         memory = file.readBytes()
-        //memory = File.readBytes()
+    }
+    // Print memory contents to csv file for debugging
+    fun printMemoryToFile() {
+        print("Writing to file...\n")
+        var progress = 0
+        val file = File("app\\src\\main\\assets\\memorylog.csv")
+        val start = Instant.now()
+        var end = Instant.now()
+        var flag = 0
+        FileOutputStream(file).use {
+            for ((index, i) in memory.withIndex()) {
+                if (index % 52428 == 0 && index != 0) {
+                    if (flag == 0) {
+                        end = Instant.now()
+                        flag = 1
+                    }
+                    progress += 5
+                    val duration = Duration.between(start, end)
+                    val remaining =
+                        duration.multipliedBy(((100 - progress) / 5).toLong()).toSeconds()
+                    print(progress)
+                    print("% done (")
+                    print(remaining)
+                    print(" seconds remaining)\n")
+                }
+                if (index % 30 == 0) {
+                    //println()
+                    file.appendText("\n")
+                }
+                file.appendText(Integer.toHexString(index))
+                file.appendText("=>")
+                file.appendText(Integer.toHexString(i.toUByte().toInt()))
+                file.appendText(",")
+            }
+        }
+    }
+    // Print memory contents to console for debugging
+    fun printMemoryToConsole() {
+        for ((index, i) in memory.withIndex()) {
+            if (index % 20 == 0) {
+                println()
+            }
+            print("\t\t\t")
+            print(Integer.toHexString(index))
+            print("=>")
+            print(Integer.toHexString(i.toUByte().toInt())) // Convert Byte -> uByte -> Integer -> Hex String for print() to print unsigned bytes
+        }
+    }
+    // Print opcodes to txt file for debugging
+    fun printOpcodesToFile() {
+        val file = File("app\\src\\main\\assets\\opcodes.txt")
+        file.appendText("PC\t=> Opcode\n")
+        try {
+            while (true) {
+                file.appendText("0x" + Integer.toHexString(this.regPC).padStart(5, '0'))
+                file.appendText("\t=> ")
+                this.fetch()
+                file.appendText(
+                    "0x" + this.opcode[0].toUByte().toString(16)
+                        .padStart(2, '0') + this.opcode[1].toUByte().toString(16)
+                        .padStart(2, '0') + "\n"
+                )
+            }
+        } catch (e: ArrayIndexOutOfBoundsException) {
+            print("Reached the end of file\n")
+        }
     }
 }
