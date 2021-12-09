@@ -93,7 +93,7 @@ class GameBoy {
     fun printMemoryToFile() {
         print("Writing to file...\n")
         var progress = 0
-        val file = File("app\\src\\main\\assets\\memorylog.csv")
+        val file = File("app/src/main/assets/memorylog.csv")
         val start = Instant.now()
         var end = Instant.now()
         var flag = 0
@@ -138,7 +138,7 @@ class GameBoy {
     }
     // Print opcodes to txt file for debugging
     fun printOpcodesToFile() {
-        val file = File("app\\src\\main\\assets\\opcodes.txt")
+        val file = File("app/src/main/assets/opcodes.txt")
         file.appendText("PC\t=> Opcode\n")
         try {
             while (true) {
