@@ -103,7 +103,9 @@ class GameBoy {
             0xc3 -> {
                 print("regpc is: 0x" + Integer.toHexString(regPC) + " +1 is: " + Integer.toHexString(regPC+0x01) + "\n")
                 print("nn is: " + Integer.toHexString(memory[regPC].toInt()) + " nnnn is: " + Integer.toHexString(memory[regPC].toInt()).plus(Integer.toHexString(memory[regPC+0x01].toInt()).padStart(2, '0')) + "\n")
-                regPC = Integer.parseInt(Integer.toHexString(memory[regPC].toInt()).plus(Integer.toHexString(memory[regPC+0x01].toInt()).padStart(2, '0')))
+                regPC = getNextTwoBytes(regPC)
+                //regPC = Integer.parseInt(memory[regPC].toString().plus(memory[regPC+0x01].toString().padStart(2, '0')))
+                //regPC = Integer.parseInt(Integer.toHexString(memory[regPC].toInt()).plus(Integer.toHexString(memory[regPC+0x01].toInt()).padStart(2, '0')))
                 print("regpc is: 0x" + regPC + "\n")
             }
                 //0x01 ->
@@ -123,6 +125,14 @@ class GameBoy {
     fun loadRom(rompath: String) {
         val file = File(rompath)
         memory = file.readBytes()
+    }
+    // Get contents from next two memory cells and return as an integer
+    fun getNextTwoBytes(address: Int) : Int {
+        var op1 = memory[regPC] * 0x100
+        var op2 = memory[regPC+1]
+        var result = (op1.plus(op2))
+
+        return result
     }
     // Print memory contents to csv file for debugging
     fun printMemoryToFile() {
