@@ -101,15 +101,12 @@ class GameBoy {
             0x06 -> regBC[0] = memory[regPC].toUByte().toInt()     // LD B, nn
             // TODO
             0xc3 -> {
-                print("regpc is: 0x" + Integer.toHexString(regPC) + " +1 is: " + Integer.toHexString(regPC+0x01) + "\n")
-                print("nn is: " + Integer.toHexString(memory[regPC].toInt()) + " nnnn is: " + Integer.toHexString(memory[regPC].toInt()).plus(Integer.toHexString(memory[regPC+0x01].toInt()).padStart(2, '0')) + "\n")
                 regPC = getNextTwoBytes(regPC)
-                //regPC = Integer.parseInt(memory[regPC].toString().plus(memory[regPC+0x01].toString().padStart(2, '0')))
-                //regPC = Integer.parseInt(Integer.toHexString(memory[regPC].toInt()).plus(Integer.toHexString(memory[regPC+0x01].toInt()).padStart(2, '0')))
-                print("regpc is: 0x" + regPC + "\n")
+                print("regpc is: 0x" + Integer.toHexString(regPC) + "\n")
             }
+            0xbc ->
                 //0x01 ->
-                else -> {
+            else -> {
                 print("A: " + Integer.toHexString(regAF[0]) + "\tF: " + Integer.toHexString(regAF[1]) + "\n")
                 print("B: " + Integer.toHexString(regBC[0]) + "\tC: " + Integer.toHexString(regBC[1]) + "\n")
                 print("D: " + Integer.toHexString(regDE[0]) + "\tE: " + Integer.toHexString(regDE[1]) + "\n")
@@ -119,8 +116,8 @@ class GameBoy {
                 print("Instruction 0x" + Integer.toHexString(opcode.toUByte().toInt()) + " at memory address 0x" + Integer.toHexString(regPC-1) + " not implemented")
                 haltflag = 1
             }
-            }
         }
+    }
     // Load ROM into memory
     fun loadRom(rompath: String) {
         val file = File(rompath)
