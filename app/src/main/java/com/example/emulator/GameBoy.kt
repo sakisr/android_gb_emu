@@ -5,29 +5,8 @@ import java.time.Duration
 import java.time.Instant
 
 // Gameboy starting address is 0x0100
-var START_ADDRESS = 0x0100
-/*
-var FONTSET_START_ADDRESS = 0x50
-var FONTSET_SIZE = 80
-var fontset = arrayOf(
-    0xF0, 0x90, 0x90, 0x90, 0xF0, // 0
-    0x20, 0x60, 0x20, 0x20, 0x70, // 1
-    0xF0, 0x10, 0xF0, 0x80, 0xF0, // 2
-    0xF0, 0x10, 0xF0, 0x10, 0xF0, // 3
-    0x90, 0x90, 0xF0, 0x10, 0x10, // 4
-    0xF0, 0x80, 0xF0, 0x10, 0xF0, // 5
-    0xF0, 0x80, 0xF0, 0x90, 0xF0, // 6
-    0xF0, 0x10, 0x20, 0x40, 0x40, // 7
-    0xF0, 0x90, 0xF0, 0x90, 0xF0, // 8
-    0xF0, 0x90, 0xF0, 0x10, 0xF0, // 9
-    0xF0, 0x90, 0xF0, 0x90, 0x90, // A
-    0xE0, 0x90, 0xE0, 0x90, 0xE0, // B
-    0xF0, 0x80, 0x80, 0x80, 0xF0, // C
-    0xE0, 0x90, 0x90, 0x90, 0xE0, // D
-    0xF0, 0x80, 0xF0, 0x80, 0xF0, // E
-    0xF0, 0x80, 0xF0, 0x80, 0x80  // F
-)
- */
+val START_ADDRESS = 0x0100
+
 class GameBoy {
     // 64 KiB of memory
     var memory = ByteArray(65536) {0x00}
@@ -35,86 +14,122 @@ class GameBoy {
     // Accumulator & Flags Register (AF Register)
     // The Flags Register is the second byte of the AF Register
     // | Bit  | Flag
-    // | 7    | Zero Flag (when result is zero)
-    // | 6    | Subtraction Flag (BCD)
-    // | 5    | Half Carry Flag (BCD)
-    // | 4    | Carry Flag
-    /*
-    var regA = 0x00
-    var regF = 0x00
-    var regB = 0x00
-    var regC = 0x00
-    var regD = 0x00
-    var regE = 0x00
-    var regH = 0x00
-    var regL = 0x00
-    */
-    var regAF = Array(2) {0}
-    var regBC = Array(2) {0}   // BC Register
-    var regDE = Array(2) {0}   // DE Register
-    var regHL = Array(2) {0}   // HL Register
-    var regSP = 0x0000              // Stack Pointer
+    // | 7    | Z - Zero Flag (when result is zero)
+    // | 6    | N - Subtraction Flag (BCD)
+    // | 5    | H - Half Carry Flag (BCD)
+    // | 4    | C - Carry Flag
+    var regAF = intArrayOf(0x01, 0xb0)
+    var regBC = intArrayOf(0x00, 0x13)   // BC Register
+    var regDE = intArrayOf(0x00, 0xd8)   // DE Register
+    var regHL = intArrayOf(0x01, 0x4d)   // HL Register
+    var regSP = 0xfffe              // Stack Pointer
     var regPC = START_ADDRESS       // Program Counter
 
     var opcode = 0x00
+    var imeFlag =  0    // Interrupt Master Enable Flag
 
     var haltflag = 0    // Flag to halt execution (for debugging)
-    /*
-    var memory = Array(4096) {0}     // 4096 bytes of memory (0x000 to 0xFFF)
-    var registers = Array(16) {0}    // 16 8-bit registers
-    var index = 0x00                        // Index register that stores a memory address
-    var pc = START_ADDRESS                  // Program counter that holds the memory address of the next instruction
-    var stack = Array(16) {0}        // Stack that holds 16 program counters
-    var si = 0x00                            // Stack index
-    var opcode = 0x0000                     // Current instruction opcode
 
-    var delaytimer = 0x00                   // 8-bit delay timer
-    var soundtimer = 0x00                   // 8-bit sound timer
-
-    var input = Array(16) {0}     // 16 input keys (0 is off - 1 is on)
-    var display = Array(2048) {0}    // 64x32 monochrome display memory
-
-    // Load fontset into memory at FONTSET_START_ADDRESS when creating object
-    init {
-        for( (index,i) in fontset.withIndex() ) {
-            memory[FONTSET_START_ADDRESS + index] = ia8 operand gameboy
-        }
-    }
-     */
     // Fetch current instruction (opcode) from memory at the address pointed by the program counter, and increase program counter
     fun fetch() {
-        opcode = (memory[regPC].toInt())//.toInt())//).toInt())
-        //opcode[1] = (memory[regPC+1].toInt())
-        // Print current program counter and opcode (for debugging)
-        /*
-        print("Program Counter: 0x" + java.lang.Integer.toHexString(regPC).padStart(5,'0'))
-        print(" Opcode: 0x" + opcode[0].toUByte().toString(16).padStart(2,'0') + opcode[1].toUByte().toString(16).padStart(2,'0') + "\n")
-         */
+        // TODO: Fix PC register incrementing points
+        opcode = (memory[regPC].toInt())
         regPC += 0x01
+        print("Running opcode: 0x" + Integer.toHexString(memory[regPC].toUByte().toInt()) + " at memory address: 0x" + Integer.toHexString(regPC) + "\n")
     }
     // Decode current instruction (opcode)
     fun decode() {
         when(opcode.toUByte().toInt()) {
             // nn -> immediate data values (8-bit/16-bit)
             // (nn) -> immediate address values (8-bit/16-bit)
-            0x00 -> return                                          // NOP
-            0x06 -> regBC[0] = memory[regPC].toUByte().toInt()     // LD B, nn
-            // TODO
-            0xc3 -> {
-                regPC = getNextTwoBytes(regPC)
-                print("regpc is: 0x" + Integer.toHexString(regPC) + "\n")
+
+            0x00 -> return
+            // Load next byte to register B
+            0x06 -> {
+                regBC[0] = memory[regPC].toInt()
+                regPC += 0x01
             }
-            0xbc ->
-                //0x01 ->
+            // Rotate contents of register A to the left
+            0x07 -> {
+                rotateBits('A', "left")
+            }
+            // Load next two bytes to registers DE
+            0x11 -> {
+                regDE[0] = memory[regPC].toInt()
+                regDE[1] = memory[regPC+1].toInt()
+                regPC += 0x02
+            }
+            // Increase Program Counter by immediate byte value
+            0x18 -> regPC += memory[regPC].toInt()
+            // Check flag Z, if it equals 1 then add immediate byte to Program Counter, else do nothing
+            0x28 -> {
+                if(getFlag('Z')) {
+                    regPC += (memory[regPC].toUByte().toInt())
+                } else {
+                    regPC += 0x01
+                }
+            }
+            // Load immediate byte into Accumulator Register
+            0x3e -> {
+                regAF[0] = memory[regPC].toUByte().toInt()
+                regPC += 0x01
+            }
+            // Load contents of Accumulator Register into Register B
+            0x47 -> regBC[0] = regAF[0]
+            // Accumulator Register = Accumulator Register XOR Accumulator Register (Resets Accumulator Register)
+            0xaf -> regAF[0] = regAF[0].xor(regAF[0])
+            // Load next two bytes to Program Counter
+            0xc3 -> regPC = getNextTwoBytes()
+            // CB instructions
+            0xcb -> {
+                cbInstructions(memory[regPC].toUByte().toInt())
+                regPC += 0x01
+            }
+
+            // Call - Push Program Counter to Stack, set new Stack Pointer and load next two bytes to Program Counter
+            0xcd -> {
+                regSP -= 0x01
+                memory[regSP] = splitToBytes(regPC, 2)
+                regSP -= 0x01
+                memory[regSP] = splitToBytes(regPC, 1)
+                regPC = getNextTwoBytes()
+            }
+            // Store Accumulator Register value in memory address (0xff00+immediate byte)
+            0xe0 ->{
+                memory[0xff00+memory[regPC]] = regAF[0].toByte()
+                regPC += 0x01
+            }
+            // Store Accumulator Register values to memory address (or register) pointed by next two bytes
+            0xea -> {
+                memory[getNextTwoBytes()] = regAF[0].toByte()
+                regPC += 0x02
+            }
+            // Load into Accumulator Registor the contents of memory address (0xff00+immediate byte)
+            0xf0 -> {
+                regAF[0] = memory[0xff00+memory[regPC]].toUByte().toInt()
+                regPC += 0x01
+            }
+            // Reset Interrupt Master Enable flag
+            0xf3 -> imeFlag = 0
+            // If the Accumulator Register value equals immediate byte value, set flag Z to true
+            0xfe -> {
+                if(regAF[0] == memory[regPC].toInt()) setFlag('Z', true)
+                regPC += 0x01
+            }
             else -> {
-                print("A: " + Integer.toHexString(regAF[0]) + "\tF: " + Integer.toHexString(regAF[1]) + "\n")
-                print("B: " + Integer.toHexString(regBC[0]) + "\tC: " + Integer.toHexString(regBC[1]) + "\n")
-                print("D: " + Integer.toHexString(regDE[0]) + "\tE: " + Integer.toHexString(regDE[1]) + "\n")
-                print("H: " + Integer.toHexString(regHL[0]) + "\tL: " + Integer.toHexString(regHL[1]) + "\n")
-                print("Stack Pointer is: 0x" + regSP + "\n")
-                print("Program Counter is: 0x" + regPC+0x8 + "\n")//.toUByte().toInt()) + "\n")
-                print("Instruction 0x" + Integer.toHexString(opcode.toUByte().toInt()) + " at memory address 0x" + Integer.toHexString(regPC-1) + " not implemented")
+                printRegisterStatus()
                 haltflag = 1
+            }
+        }
+    }
+    // CB Instructions
+    fun cbInstructions(operand: Int) {
+        when(operand) {
+            0x87 -> {
+                setBit(false, 0, 'A')
+            }
+            else -> {
+                print("CB instruction 0x" + Integer.toHexString(operand.toUByte().toInt()) + " not implemented\n")
             }
         }
     }
@@ -123,13 +138,183 @@ class GameBoy {
         val file = File(rompath)
         memory = file.readBytes()
     }
-    // Get contents from next two memory cells and return as an integer
-    fun getNextTwoBytes(address: Int) : Int {
-        var op1 = memory[regPC] * 0x100
-        var op2 = memory[regPC+1]
-        var result = (op1.plus(op2))
-
+    // Set the Flag register according to flag name and bit
+    fun setFlag(flagName: Char, bitBoolean: Boolean) {
+        // Convert integer in Flag Register to binary string
+        var register = Integer.toBinaryString(regAF[1]).padStart(8, '0')
+        // Convert boolean input to char
+        var bit : Char
+        if (bitBoolean) {
+            bit = '1'
+        } else {
+            bit = '0'
+        }
+        // Set which index in binary string to change according to input flag name
+        val index : Int
+        when (flagName) {
+            'Z','z' -> index = 0
+            'N','n' -> index = 1
+            'H','h' -> index = 2
+            'C','c' -> index = 3
+            else -> {
+                print("Wrong flag name input. Flag names are Z,N,H,C.\n")
+                return
+            }
+        }
+        // Change selected bit and set Flag Register to new value
+        register = register.substring(0, index) + bit + register.substring(index+1)
+        regAF[1] = Integer.parseInt(register, 2)
+    }
+    // Check input flag and return its value
+    fun getFlag(flagName: Char) : Boolean {
+        when (flagName) {
+            'Z', 'z' -> {
+                val flag = Integer.toBinaryString(regAF[1]).padStart(8, '0').get(0)
+                if (flag.equals('1')) {
+                    return true
+                } else if (flag.equals('0')) {
+                    return false
+                }
+            }
+            'N', 'n' -> {
+                val flag = Integer.toBinaryString(regAF[1]).padStart(8, '0').get(1)
+                if (flag.equals('1')) {
+                    return true
+                } else if (flag.equals('0')) {
+                    return false
+                }
+            }
+            'H', 'h' -> {
+                val flag = Integer.toBinaryString(regAF[1]).padStart(8, '0').get(2)
+                if (flag.equals('1')) {
+                    return true
+                } else if (flag.equals('0')) {
+                    return false
+                }
+            }
+            'C', 'c' -> {
+                val flag = Integer.toBinaryString(regAF[1]).padStart(8, '0').get(3)
+                if (flag.equals('1')) {
+                    return true
+                } else if (flag.equals('0')) {
+                    return false
+                }
+            }
+        }
+        print("Wrong flag name given. Flags are Z,N,H,C.\n")
+        return false
+    }
+    // Get byte contents from next two memory cells and return them as an integer (Converting to unsigned byte first)
+    fun getNextTwoBytes() : Int {
+        var op1 = memory[regPC+1].toUByte() * 0x100u
+        var op2 = memory[regPC].toUByte()
+        var result = (op1.plus(op2)).toInt()
+        print("Next two bytes are: " + Integer.toHexString(result) + "\n")
         return result
+    }
+    // Split word into two bytes and select which one to return
+    fun splitToBytes(word: Int, selection: Int) : Byte {
+        var op1 : Byte
+        var op2 : Byte
+        op1 = word.shr(8).toByte()
+        op2 = word.toByte()
+        when(selection) {
+            1 -> return op1
+            2 -> return op2
+            else -> {
+                print("Wrong selection. Enter 1 or 2.\n")
+                return op1
+            }
+        }
+    }
+    // Set a bit - Inputs are value (0 or 1), index (0-7) and register (A-F)
+    fun setBit(bitValue: Boolean, bitIndex: Int, register: Char) {
+        // Convert boolean input to 0 and 1
+        var bit: Int
+        if(bitValue) {
+            bit = 1
+        } else {
+            bit = 0
+        }
+        // Place input bit at selected index of selected register
+        when(register) {
+            'A', 'a' -> {
+                var register = Integer.toBinaryString(regAF[0]).padStart(8, '0')
+                register = register.substring(0, bitIndex) + bit + register.substring(bitIndex + 1)
+                regAF[0] = Integer.parseInt(register, 2)
+            }
+            'B', 'b' -> {
+                var register = Integer.toBinaryString(regBC[0]).padStart(8, '0')
+                register = register.substring(0, bitIndex) + bit + register.substring(bitIndex + 1)
+                regBC[0] = Integer.parseInt(register, 2)
+            }
+            'C', 'c' -> {
+                var register = Integer.toBinaryString(regBC[1]).padStart(8, '0')
+                register = register.substring(0, bitIndex) + bit + register.substring(bitIndex + 1)
+                regBC[1] = Integer.parseInt(register, 2)
+            }
+            'D', 'd' -> {
+                var register = Integer.toBinaryString(regDE[0]).padStart(8, '0')
+                register = register.substring(0, bitIndex) + bit + register.substring(bitIndex + 1)
+                regDE[0] = Integer.parseInt(register, 2)
+            }
+            'E', 'e' -> {
+                var register = Integer.toBinaryString(regDE[1]).padStart(8, '0')
+                register = register.substring(0, bitIndex) + bit + register.substring(bitIndex + 1)
+                regDE[1] = Integer.parseInt(register, 2)
+            }
+            'H', 'h' -> {
+                var register = Integer.toBinaryString(regHL[0]).padStart(8, '0')
+                register = register.substring(0, bitIndex) + bit + register.substring(bitIndex + 1)
+                regHL[0] = Integer.parseInt(register, 2)
+            }
+            'L', 'l' -> {
+                var register = Integer.toBinaryString(regHL[1]).padStart(8, '0')
+                register = register.substring(0, bitIndex) + bit + register.substring(bitIndex + 1)
+                regAF[1] = Integer.parseInt(register, 2)
+            }
+        }
+    }
+    // TODO
+    // Rotates bits of selected register to selected direction
+    fun rotateBits(registerName: Char, direction: String) {
+        when(registerName) {
+            'A','a' -> {
+                when(direction) {
+                    "left" -> {
+                        regAF[0] = 0xe4
+                        regAF[0] = regAF[0].shl(1)
+                        print("regA is: " + Integer.toHexString(regAF[0]) + "\n")
+                    }
+                    //"right" -> {
+
+                    //}
+                }
+            }
+            //'B','b' -> {
+
+            //}
+            //'C','c' -> {
+
+            //}
+            //'D','d' -> {
+
+            //}
+            //'E','e' -> {
+
+            //}
+            //'H','h' -> {
+
+            //}
+            //'L','l' -> {
+
+            //}
+            //"right" ->
+            else -> {
+                print("Wrong direction. Enter left or right.\n")
+                return
+            }
+        }
     }
     // Print memory contents to csv file for debugging
     fun printMemoryToFile() {
@@ -156,7 +341,6 @@ class GameBoy {
                     print(" seconds remaining)\n")
                 }
                 if (i % 30 == 0) {
-                    //println()
                     file.appendText("\n")
                 }
                 file.appendText("0x" + Integer.toHexString(i).padStart(5, '0'))
@@ -189,16 +373,24 @@ class GameBoy {
                 this.fetch()
                 file.appendText("0x" + this.opcode.toUByte().toString(16).padStart(2, '0') + "\n"
                 )
-                /*
-                file.appendText(
-                    "0x" + this.opcode[0].toUByte().toString(16)
-                        .padStart(2, '0') + this.opcode[1].toUByte().toString(16)
-                        .padStart(2, '0') + "\n"
-                )
-                */
             }
         } catch (e: ArrayIndexOutOfBoundsException) {
             print("Reached the end of file\n")
         }
+    }
+    // Print status of registers for debugging
+    fun printRegisterStatus() {
+        print("-------------------------\n")
+        print("|\t\tREGISTERS\t\t|\n")
+        print("-------------------------\n")
+        print("|\tA: 0x" + Integer.toHexString(regAF[0]).padStart(2, '0') + "\tF: 0x" + Integer.toHexString(regAF[1]).padStart(2, '0') + "\t\t|\n")
+        print("|\tB: 0x" + Integer.toHexString(regBC[0]).padStart(2, '0') + "\tC: 0x" + Integer.toHexString(regBC[1]).padStart(2, '0') + "\t\t|\n")
+        print("|\tD: 0x" + Integer.toHexString(regDE[0]).padStart(2, '0') + "\tE: 0x" + Integer.toHexString(regDE[1]).padStart(2, '0') + "\t\t|\n")
+        print("|\tH: 0x" + Integer.toHexString(regHL[0]).padStart(2, '0') + "\tL: 0x" + Integer.toHexString(regHL[1]).padStart(2, '0') + "\t\t|\n")
+        print("-------------------------\n")
+        print(" Stack Pointer is: 0x" + Integer.toHexString(regSP) + "\n")
+        print(" Program Counter is: 0x" + Integer.toHexString(regPC) + "\n")
+        print(" Instruction 0x" + Integer.toHexString(opcode.toUByte().toInt()).padStart(2, '0') + " at memory address 0x" + Integer.toHexString(regPC-1).padStart(5, '0') + " not implemented\n")
+        print("-------------------------------------------------------------\n")
     }
 }
