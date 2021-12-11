@@ -1,4 +1,5 @@
 package com.example.emulator
+import android.icu.number.IntegerWidth
 import java.io.File
 import java.io.FileOutputStream
 import java.time.Duration
@@ -10,7 +11,9 @@ val START_ADDRESS = 0x0100
 class GameBoy {
     // 64 KiB of memory
     var memory = ByteArray(65536) {0x00}
+
     // 6 Registers - Can be used as two 8 bit registers or 1 16 bit register
+    // ----------------------------------------------------------------
     // Accumulator & Flags Register (AF Register)
     // The Flags Register is the second byte of the AF Register
     // | Bit  | Flag
@@ -19,11 +22,12 @@ class GameBoy {
     // | 5    | H - Half Carry Flag (BCD)
     // | 4    | C - Carry Flag
     var regAF = intArrayOf(0x01, 0xb0)
-    var regBC = intArrayOf(0x00, 0x13)   // BC Register
-    var regDE = intArrayOf(0x00, 0xd8)   // DE Register
-    var regHL = intArrayOf(0x01, 0x4d)   // HL Register
-    var regSP = 0xfffe              // Stack Pointer
-    var regPC = START_ADDRESS       // Program Counter
+    // ----------------------------------------------------------------
+    var regBC = intArrayOf(0x00, 0x13)  // BC Register
+    var regDE = intArrayOf(0x00, 0xd8)  // DE Register
+    var regHL = intArrayOf(0x01, 0x4d)  // HL Register
+    var regSP = 0xfffe                  // Stack Pointer
+    var regPC = START_ADDRESS           // Program Counter
 
     var opcode = 0x00
     var imeFlag =  0    // Interrupt Master Enable Flag
@@ -32,10 +36,9 @@ class GameBoy {
 
     // Fetch current instruction (opcode) from memory at the address pointed by the program counter, and increase program counter
     fun fetch() {
-        // TODO: Fix PC register incrementing points
+        print("Running opcode: 0x" + Integer.toHexString(memory[regPC].toUByte().toInt()) + " at memory address: 0x" + Integer.toHexString(regPC) + "regA is: 0x" + Integer.toHexString(regAF[0]) + "\n")
         opcode = (memory[regPC].toInt())
         regPC += 0x01
-        print("Running opcode: 0x" + Integer.toHexString(memory[regPC].toUByte().toInt()) + " at memory address: 0x" + Integer.toHexString(regPC) + "\n")
     }
     // Decode current instruction (opcode)
     fun decode() {
@@ -44,6 +47,12 @@ class GameBoy {
             // (nn) -> immediate address values (8-bit/16-bit)
 
             0x00 -> return
+            // Load next two bytes into registers BC
+            0x01 -> {
+                regBC[0] = memory[regPC+1].toUByte().toInt()
+                regBC[1] = memory[regPC].toUByte().toInt()
+                regPC += 0x02
+            }
             // Load next byte to register B
             0x06 -> {
                 regBC[0] = memory[regPC].toInt()
@@ -53,22 +62,58 @@ class GameBoy {
             0x07 -> {
                 rotateBits('A', "left")
             }
-            // Load next two bytes to registers DE
+            // Decrease registers BC by 1
+            0x0b -> {
+                addToRegisters("BC", -1)
+            }
+            // Load next two bytes into registers DE
             0x11 -> {
-                regDE[0] = memory[regPC].toInt()
-                regDE[1] = memory[regPC+1].toInt()
+                regDE[0] = memory[regPC+1].toUByte().toInt()
+                regDE[1] = memory[regPC].toUByte().toInt()
                 regPC += 0x02
             }
             // Increase Program Counter by immediate byte value
             0x18 -> regPC += memory[regPC].toInt()
-            // Check flag Z, if it equals 1 then add immediate byte to Program Counter, else do nothing
-            0x28 -> {
-                if(getFlag('Z')) {
-                    regPC += (memory[regPC].toUByte().toInt())
+            // Check flag Z, if it equals 0 then add immediate byte to Program Counter, else do nothing
+            0x20 -> {
+                if(getFlag('Z') == false) {
+                    regPC += 0x01
+                    regPC += (memory[regPC-0x01].toUByte().toInt())
                 } else {
                     regPC += 0x01
                 }
             }
+            // Load next two bytes into registers HL
+            0x21 -> {
+                regHL[0] = splitToBytes(getNextTwoBytes(regPC), 1).toUByte().toInt()
+                regHL[1] = splitToBytes(getNextTwoBytes(regPC), 2).toUByte().toInt()
+                regPC += 0x02
+            }
+            // Increase registers HL by 1
+            0x23 -> {
+                addToRegisters("HL", 1)
+            }
+            // Check flag Z, if it equals 1 then add immediate byte to Program Counter, else do nothing
+            0x28 -> {
+                if(getFlag('Z') == true) {
+                    regPC += 0x01
+                    regPC += (memory[regPC-0x01].toUByte().toInt())
+                } else {
+                    regPC += 0x01
+                }
+            }
+            // Load next two bytes into Stack Pointer
+            0x31 -> {
+                regSP = getNextTwoBytes(regPC)
+                regPC += 0x02
+            }
+            // Load immediate byte into memory address stored in registers HL
+            0x36 -> {
+                memory[bytesToWord(regHL[0], regHL[1])] = memory[regPC]
+                regPC += 0x01
+            }
+            // Load contents of Register B into Accumulator Register
+            0x78 -> regAF[0] = regBC[0]
             // Load immediate byte into Accumulator Register
             0x3e -> {
                 regAF[0] = memory[regPC].toUByte().toInt()
@@ -76,32 +121,66 @@ class GameBoy {
             }
             // Load contents of Accumulator Register into Register B
             0x47 -> regBC[0] = regAF[0]
+            // Accumulator Register = Accumulator Register AND Accumulator Register
+            0xa7 -> regAF[0] = regAF[0].and(regAF[0])
             // Accumulator Register = Accumulator Register XOR Accumulator Register (Resets Accumulator Register)
             0xaf -> regAF[0] = regAF[0].xor(regAF[0])
+            // Accumulator Register = Register C OR Accumulator Register
+            0xb1 -> regAF[0] = regBC[1].or(regAF[0])
+            // Check flag Z, if it equals 0 then pop Program Counter from stack
+            0xc0 -> {
+                if(getFlag('Z') == false) {
+                    regPC = getNextTwoBytes(regSP)
+                    memory[regSP] = 0
+                    regSP += 0x01
+                    memory[regSP] = 0
+                    regSP += 0x01
+                }
+            }
             // Load next two bytes to Program Counter
-            0xc3 -> regPC = getNextTwoBytes()
+            0xc3 -> regPC = getNextTwoBytes(regPC)
+            // Return - Pop stored Program Counter value from stack back into Program Counter to return from subroutine
+            0xc9 -> {
+                regPC = getNextTwoBytes(regSP)
+                memory[regSP] = 0
+                regSP += 0x01
+                memory[regSP] = 0
+                regSP += 0x01
+            }
             // CB instructions
             0xcb -> {
                 cbInstructions(memory[regPC].toUByte().toInt())
                 regPC += 0x01
             }
-
-            // Call - Push Program Counter to Stack, set new Stack Pointer and load next two bytes to Program Counter
+            // Call - Push Program Counter to Stack, set new Stack Pointer and load next two bytes to Program Counter to call a subroutine
             0xcd -> {
-                regSP -= 0x01
-                memory[regSP] = splitToBytes(regPC, 2)
+                regPC += 0x02
                 regSP -= 0x01
                 memory[regSP] = splitToBytes(regPC, 1)
-                regPC = getNextTwoBytes()
+                regSP -= 0x01
+                memory[regSP] = splitToBytes(regPC, 2)
+                regPC = getNextTwoBytes(regPC-0x02)
+            }
+            // Push registers DE into stack
+            0xd5 -> {
+                regSP -= 0x01
+                memory[regSP] = regDE[0].toUByte().toByte()
+                regSP -= 0x01
+                memory[regSP] = regDE[1].toUByte().toByte()
             }
             // Store Accumulator Register value in memory address (0xff00+immediate byte)
             0xe0 ->{
                 memory[0xff00+memory[regPC]] = regAF[0].toByte()
                 regPC += 0x01
             }
+            // Store into Accumulator Register the results of (Accumulator Register AND immediate byte)
+            0xe6 -> {
+                regAF[0] = (regAF[0] and memory[regPC].toUByte().toInt())
+                regPC += 0x01
+            }
             // Store Accumulator Register values to memory address (or register) pointed by next two bytes
             0xea -> {
-                memory[getNextTwoBytes()] = regAF[0].toByte()
+                memory[getNextTwoBytes(regPC)] = regAF[0].toByte()
                 regPC += 0x02
             }
             // Load into Accumulator Registor the contents of memory address (0xff00+immediate byte)
@@ -111,6 +190,19 @@ class GameBoy {
             }
             // Reset Interrupt Master Enable flag
             0xf3 -> imeFlag = 0
+            // Push Accumulator Register and Flag Register to memory, using Stack Pointer
+            0xf5 -> {
+                regSP -= 0x01
+                memory[regSP] = regAF[0].toUByte().toByte()
+                regSP -= 0x01
+                memory[regSP] = regAF[1].toUByte().toByte()
+            }
+            // Load into Accumulator Register the contents of memory[two immediate bytes]
+            0xfa -> {
+                regAF[0] = memory[getNextTwoBytes(regPC)].toUByte().toInt()
+                print("loading memory[" + Integer.toHexString(getNextTwoBytes(regPC)) + "]=0x" + Integer.toHexString(memory[getNextTwoBytes(regPC)].toUByte().toInt()) + "\n")
+                regPC += 0x02
+            }
             // If the Accumulator Register value equals immediate byte value, set flag Z to true
             0xfe -> {
                 if(regAF[0] == memory[regPC].toInt()) setFlag('Z', true)
@@ -125,8 +217,13 @@ class GameBoy {
     // CB Instructions
     fun cbInstructions(operand: Int) {
         when(operand) {
+            // Set register A bit 0 to 0
             0x87 -> {
-                setBit(false, 0, 'A')
+                setBit(false, 7, 'A')
+            }
+            // Set register A bit 6 to 0
+            0xb7 -> {
+                setBit(false, 1, 'A')
             }
             else -> {
                 print("CB instruction 0x" + Integer.toHexString(operand.toUByte().toInt()) + " not implemented\n")
@@ -204,14 +301,29 @@ class GameBoy {
         print("Wrong flag name given. Flags are Z,N,H,C.\n")
         return false
     }
-    // Get byte contents from next two memory cells and return them as an integer (Converting to unsigned byte first)
-    fun getNextTwoBytes() : Int {
-        var op1 = memory[regPC+1].toUByte() * 0x100u
-        var op2 = memory[regPC].toUByte()
+    // Little Endian - Get byte contents from next two memory cells and return them as an integer (Converting to unsigned byte first)
+    fun getNextTwoBytes(index: Int) : Int {
+        var op1 = memory[index+1].toUByte() * 0x100u
+        var op2 = memory[index].toUByte()
         var result = (op1.plus(op2)).toInt()
-        print("Next two bytes are: " + Integer.toHexString(result) + "\n")
         return result
     }
+    // Concatenate two bytes to form a word and return as integer
+    fun bytesToWord(highByte: Int, lowByte: Int) : Int {
+        var op1 = highByte.toUByte() * 0x100u
+        var op2 = lowByte.toUByte()
+        var result = (op1.plus(op2)).toInt()
+        return result
+    }
+    /*
+    // Big Endian -  Get byte contents from next two memory cells and return them as an integer (Converting to unsigned byte first)
+    fun getNextTwoBytesBigEndian(index: Int) : Int {
+        var op1 = memory[index].toUByte() * 0x100u
+        var op2 = memory[index+1].toUByte()
+        var result = (op1.plus(op2)).toInt()
+        return result
+    }
+    */
     // Split word into two bytes and select which one to return
     fun splitToBytes(word: Int, selection: Int) : Byte {
         var op1 : Byte
@@ -224,6 +336,32 @@ class GameBoy {
             else -> {
                 print("Wrong selection. Enter 1 or 2.\n")
                 return op1
+            }
+        }
+    }
+    // Add input value to selected register (AF, BC, DE, HL)
+    fun addToRegisters(registers: String, value: Int) {
+        // Join both register bytes to a word and add given value. Then split word into two bytes to add back to the registers.
+        when(registers) {
+            "AF", "af" -> {
+                regAF[0] = splitToBytes(bytesToWord(regAF[0], regAF[1]) + value, 1).toUByte().toInt()
+                regAF[1] = splitToBytes(bytesToWord(regAF[0], regAF[1]) + value, 2).toUByte().toInt()
+                return
+            }
+            "BC", "bc" -> {
+                regBC[0] = splitToBytes(bytesToWord(regBC[0], regBC[1]) + value, 1).toUByte().toInt()
+                regBC[1] = splitToBytes(bytesToWord(regBC[0], regBC[1]) + value, 2).toUByte().toInt()
+                return
+            }
+            "DE", "de" -> {
+                regDE[0] = splitToBytes(bytesToWord(regDE[0], regDE[1]) + value, 1).toUByte().toInt()
+                regDE[1] = splitToBytes(bytesToWord(regDE[0], regDE[1]) + value, 2).toUByte().toInt()
+                return
+            }
+            "HL", "hl" -> {
+                regHL[0] = splitToBytes(bytesToWord(regHL[0], regHL[1]) + value, 1).toUByte().toInt()
+                regHL[1] = splitToBytes(bytesToWord(regHL[0], regHL[1]) + value, 2).toUByte().toInt()
+                return
             }
         }
     }
