@@ -40,6 +40,7 @@ class GameBoy {
         opcode = (memory[regPC].toInt())
         regPC += 0x01
     }
+    // TODO: Implement flags
     // Decode current instruction (opcode)
     fun decode() {
         when(opcode.toUByte().toInt()) {
@@ -59,9 +60,9 @@ class GameBoy {
                 regPC += 0x01
             }
             // Rotate contents of register A to the left
-            0x07 -> {
-                rotateBits('A', "left")
-            }
+            //0x07 -> {
+            //    rotateBits('A', "left")
+            //}
             // Decrease registers BC by 1
             0x0b -> {
                 addToRegisters("BC", -1)
@@ -203,7 +204,7 @@ class GameBoy {
                 print("loading memory[" + Integer.toHexString(getNextTwoBytes(regPC)) + "]=0x" + Integer.toHexString(memory[getNextTwoBytes(regPC)].toUByte().toInt()) + "\n")
                 regPC += 0x02
             }
-            // If the Accumulator Register value equals immediate byte value, set flag Z to true
+            // If the (Accumulator Register - immediate byte) == 0, set flag Z to true
             0xfe -> {
                 if(regAF[0] == memory[regPC].toInt()) setFlag('Z', true)
                 regPC += 0x01
@@ -234,6 +235,34 @@ class GameBoy {
     fun loadRom(rompath: String) {
         val file = File(rompath)
         memory = file.readBytes()
+    }
+    // Check if given operation between two given operands produces a Carry Flag
+    fun checkCarry(op1: Int, op2: Int, operation: String) : Boolean {
+        when(operation) {
+            "ADD","add","+" -> {
+
+            }
+            "SUB","sub","-" -> {
+
+            }
+            "LD","ld","LOAD","load" -> {
+
+            }
+        }
+    }
+    // Check if given operation between two given operands produces a Half Carry Flag
+    fun checkHalfCarry(op1: Int, op2: Int, operation: String) : Boolean {
+        when(operation) {
+            "ADD","add","+" -> {
+
+            }
+            "SUB","sub","-" -> {
+
+            }
+            "LD","ld","LOAD","load" -> {
+
+            }
+        }
     }
     // Set the Flag register according to flag name and bit
     fun setFlag(flagName: Char, bitBoolean: Boolean) {
