@@ -238,9 +238,14 @@ class GameBoy {
     }
     // Check if given operation between two given operands produces a Carry Flag
     fun checkCarry(op1: Int, op2: Int, operation: String) : Boolean {
+        val binary1 = Integer.toBinaryString(op1)
+        val binary2 = Integer.toBinaryString(op2)
+        var carry = 0
         when(operation) {
             "ADD","add","+" -> {
-
+                //for(i in )
+                print(binary1 + " " + binary2)
+                return false
             }
             "SUB","sub","-" -> {
 
