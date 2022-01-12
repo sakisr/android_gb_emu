@@ -207,6 +207,7 @@ class GameBoy {
             // If the (Accumulator Register - immediate byte) == 0, set flag Z to true
             0xfe -> {
                 if(regAF[0] == memory[regPC].toInt()) setFlag('Z', true)
+                val lol = checkCarry(regAF[0], memory[regPC].toUByte().toInt(), "ADD")
                 regPC += 0x01
             }
             else -> {
@@ -238,8 +239,12 @@ class GameBoy {
     }
     // Check if given operation between two given operands produces a Carry Flag
     fun checkCarry(op1: Int, op2: Int, operation: String) : Boolean {
-        val binary1 = Integer.toBinaryString(op1)
-        val binary2 = Integer.toBinaryString(op2)
+        //val binary1 = Integer.toBinaryString(op1)
+        //val binary2 = Integer.toBinaryString(op2)
+        // Split binary string to integer arrays
+        val binary1 = Integer.toBinaryString(op1).map {it.toInt()}
+        val binary2 = Integer.toBinaryString(op2).map {it.toInt()}
+        print("binary is: " + binary1[0] + "/n")
         var carry = 0
         when(operation) {
             "ADD","add","+" -> {
@@ -248,15 +253,16 @@ class GameBoy {
                 return false
             }
             "SUB","sub","-" -> {
-
+                return false
             }
             "LD","ld","LOAD","load" -> {
-
+                return false
             }
         }
+        return true
     }
     // Check if given operation between two given operands produces a Half Carry Flag
-    fun checkHalfCarry(op1: Int, op2: Int, operation: String) : Boolean {
+    /*fun checkHalfCarry(op1: Int, op2: Int, operation: String) : Boolean {
         when(operation) {
             "ADD","add","+" -> {
 
@@ -268,7 +274,7 @@ class GameBoy {
 
             }
         }
-    }
+    } */
     // Set the Flag register according to flag name and bit
     fun setFlag(flagName: Char, bitBoolean: Boolean) {
         // Convert integer in Flag Register to binary string
@@ -295,6 +301,7 @@ class GameBoy {
         // Change selected bit and set Flag Register to new value
         register = register.substring(0, index) + bit + register.substring(index+1)
         regAF[1] = Integer.parseInt(register, 2)
+        return
     }
     // Check input flag and return its value
     fun getFlag(flagName: Char) : Boolean {
