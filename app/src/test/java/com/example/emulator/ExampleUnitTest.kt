@@ -9,9 +9,16 @@ import org.junit.Assert.*
  *
  * See [testing documentation](http://d.android.com/tools/testing).
  */
-class ExampleUnitTest {
+/*class ExampleUnitTest {
     @Test
     fun addition_isCorrect() {
         assertEquals(4, 2 + 2)
+    }
+}*/
+class GameboyBinaryCalculationTest() {
+    @Test
+    fun Gameboy_CheckCarry() {
+        val gb = GameBoy()
+        assertEquals(gb.checkCarry(15, 15, "add"), true)
     }
 }

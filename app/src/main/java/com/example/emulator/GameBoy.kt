@@ -36,7 +36,7 @@ class GameBoy {
 
     // Fetch current instruction (opcode) from memory at the address pointed by the program counter, and increase program counter
     fun fetch() {
-        print("Running opcode: 0x" + Integer.toHexString(memory[regPC].toUByte().toInt()) + " at memory address: 0x" + Integer.toHexString(regPC) + "regA is: 0x" + Integer.toHexString(regAF[0]) + "\n")
+        print("Running opcode: 0x" + Integer.toHexString(memory[regPC].toUByte().toInt()) + " at memory address: 0x" + Integer.toHexString(regPC) + " | regA is: 0x" + Integer.toHexString(regAF[0]) + "\n")
         opcode = (memory[regPC].toInt())
         regPC += 0x01
     }
@@ -244,7 +244,7 @@ class GameBoy {
         // Split binary string to integer arrays
         val binary1 = Integer.toBinaryString(op1).map {it.toInt()}
         val binary2 = Integer.toBinaryString(op2).map {it.toInt()}
-        print("binary is: " + binary1[0] + "/n")
+        print("binary is: " + binary1[0] + "\n")
         var carry = 0
         when(operation) {
             "ADD","add","+" -> {
