@@ -237,6 +237,19 @@ class GameBoy {
         val file = File(rompath)
         memory = file.readBytes()
     }
+    // Return an array of bits from two given operands. Operand 1 is placed into Array[0] to Array[7] and operand 2 into Array[8] to Array[15]
+    fun convertToBits(op1: Int, op2:Int) : IntArray {
+        print("op1 is: " + op1 + " op2 is: " + op2 + "\n")
+        val binary1 = String.format("%"+8+"s", Integer.toBinaryString(op1)).replace(" ".toRegex(), "0")//.map{it.toInt()}
+        print("binary1 is: " + binary1)
+        val splitbinary1 = binary1
+
+        val binary2 = String.format("%"+8+"s", Integer.toBinaryString(op2)).replace(" ".toRegex(), "0")
+        //val splitbinary2 = binary2.split("").map{it.toInt()}
+
+        val array = binary1.split("").map{it.toInt()} //+ splitbinary2
+        return array.toIntArray()
+    }
     // Check if given operation between two given operands produces a Carry Flag
     fun checkCarry(op1: Int, op2: Int, operation: String) : Boolean {
         //val binary1 = Integer.toBinaryString(op1)

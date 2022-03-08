@@ -10,4 +10,6 @@ fun main() {
         gb.fetch()
         gb.decode()
     }
+
+    print(gb.convertToBits(0x01,0x02) + "\n")
 }
