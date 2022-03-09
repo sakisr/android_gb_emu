@@ -236,57 +236,6 @@ class GameBoy {
         val file = File(rompath)
         memory = file.readBytes()
     }
-    // Return an Integer array containing the 16 bits of two given operands
-    // Operand 1 is placed into positions Array[0] to Array[7] and operand 2 into Array[8] to Array[15]
-    fun convertToBits(op1: Int, op2:Int) : IntArray {
-        // Convert operands to binary format xxxxxxxx
-        val binary1 = String.format("%"+8+"s", Integer.toBinaryString(op1)).replace(" ".toRegex(), "0")
-        val binary2 = String.format("%"+8+"s", Integer.toBinaryString(op2)).replace(" ".toRegex(), "0")
-        val array = binary1 + binary2
-        // Split string into 16 bits and convert to Integer array
-        return array.chunked(1).map{it.toInt()}.toIntArray()
-    }
-    // Perform given operation (add, sub, ld) and update flags
-    fun performCalculation(op1: Int, op2: Int, operation: String) : IntArray {
-        var inputarray = convertToBits(op1, op2)
-        var resultarray = intArrayOf(0,0,0,0,0,0,0,0)
-        var carry = 0
-        var halfcarry = 0
-        var zero = 0
-        when(operation) {
-            "ADD","add","+" -> {
-                for (i in 7 downTo 0) {
-                    resultarray[i] = inputarray[i + 8] + inputarray[i] + carry
-                    if (resultarray[i] == 2) {
-                        resultarray[i] = 0
-                        carry = 1
-                    } else {
-                        carry = 0
-                    }
-                    if (i == 4) {
-                        if (carry == 1) {
-                            halfcarry == 1
-                        } else {
-                            halfcarry == 0
-                        }
-                    }
-                }
-                if (resultarray.sum() == 0) {
-                    zero = 1
-                } else {
-                    zero = 0
-                }
-                return resultarray
-            }
-            "SUB","sub","-" -> {
-                return resultarray
-            }
-            "LD","ld","LOAD","load" -> {
-                return resultarray
-            }
-        }
-        return resultarray
-    }
     // Check if given operation between two given operands produces a Half Carry Flag
     /*fun checkHalfCarry(op1: Int, op2: Int, operation: String) : Boolean {
         when(operation) {
@@ -405,6 +354,62 @@ class GameBoy {
                 return op1
             }
         }
+    }
+    // Return an Integer array containing the 16 bits of two given operands
+    // Operand 1 is placed into positions Array[0] to Array[7] and operand 2 into Array[8] to Array[15]
+    fun convertToBits(op1: Int, op2:Int) : IntArray {
+        // Convert operands to binary format xxxxxxxx
+        val binary1 = String.format("%"+8+"s", Integer.toBinaryString(op1)).replace(" ".toRegex(), "0")
+        val binary2 = String.format("%"+8+"s", Integer.toBinaryString(op2)).replace(" ".toRegex(), "0")
+        val array = binary1 + binary2
+        // Split string into 16 bits and convert to Integer array
+        return array.chunked(1).map{it.toInt()}.toIntArray()
+    }
+    // Perform given operation (add, sub, ld) and update flags
+    fun performCalculation(op1: Int, op2: Int, operation: String) : IntArray {
+        // Convert operands to bit arrays and initialize result array
+        var inputarray = convertToBits(op1, op2)
+        var resultarray = intArrayOf(0,0,0,0,0,0,0,0)
+        // Get current flags and convert Boolean to Integer
+        var carry = getFlag('C').compareTo(false)
+        var halfcarry = getFlag('H').compareTo(false)
+        var zero = getFlag('Z').compareTo(false)
+        // Perform input operation
+        when(operation) {
+            "ADD","add","+" -> {
+                for (i in 7 downTo 0) {
+                    resultarray[i] = inputarray[i + 8] + inputarray[i] + carry
+                    if (resultarray[i] == 2) {
+                        resultarray[i] = 0
+                        carry = 1
+                    } else {
+                        carry = 0
+                    }
+                    if (i == 4) {
+                        if (carry == 1) {
+                            halfcarry == 1
+                        } else {
+                            halfcarry == 0
+                        }
+                    }
+                }
+                if (resultarray.sum() == 0) {
+                    zero = 1
+                } else {
+                    zero = 0
+                }
+            }
+            "SUB","sub","-" -> {
+            }
+            "LD","ld","LOAD","load" -> {
+            }
+        }
+        // TODO: Write intToBool() and boolToInt()
+        // Update flags
+        setFlag('C', carry)
+        setFlag('H', halfcarry)
+        setFlag('Z', zero)
+        return resultarray
     }
     // Add input value to selected register (AF, BC, DE, HL)
     fun addToRegisters(registers: String, value: Int) {
