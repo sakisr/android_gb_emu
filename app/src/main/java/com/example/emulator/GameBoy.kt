@@ -1,5 +1,4 @@
 package com.example.emulator
-import android.icu.number.IntegerWidth
 import java.io.File
 import java.io.FileOutputStream
 import java.time.Duration
@@ -207,7 +206,7 @@ class GameBoy {
             // If the (Accumulator Register - immediate byte) == 0, set flag Z to true
             0xfe -> {
                 if(regAF[0] == memory[regPC].toInt()) setFlag('Z', true)
-                val lol = checkCarry(regAF[0], memory[regPC].toUByte().toInt(), "ADD")
+                val lol = performCalculation(regAF[0], memory[regPC].toUByte().toInt(), "ADD")
                 regPC += 0x01
             }
             else -> {
@@ -237,42 +236,56 @@ class GameBoy {
         val file = File(rompath)
         memory = file.readBytes()
     }
-    // Return an array of bits from two given operands. Operand 1 is placed into Array[0] to Array[7] and operand 2 into Array[8] to Array[15]
+    // Return an Integer array containing the 16 bits of two given operands
+    // Operand 1 is placed into positions Array[0] to Array[7] and operand 2 into Array[8] to Array[15]
     fun convertToBits(op1: Int, op2:Int) : IntArray {
-        print("op1 is: " + op1 + " op2 is: " + op2 + "\n")
-        val binary1 = String.format("%"+8+"s", Integer.toBinaryString(op1)).replace(" ".toRegex(), "0")//.map{it.toInt()}
-        print("binary1 is: " + binary1)
-        val splitbinary1 = binary1
-
+        // Convert operands to binary format xxxxxxxx
+        val binary1 = String.format("%"+8+"s", Integer.toBinaryString(op1)).replace(" ".toRegex(), "0")
         val binary2 = String.format("%"+8+"s", Integer.toBinaryString(op2)).replace(" ".toRegex(), "0")
-        //val splitbinary2 = binary2.split("").map{it.toInt()}
-
-        val array = binary1.split("").map{it.toInt()} //+ splitbinary2
-        return array.toIntArray()
+        val array = binary1 + binary2
+        // Split string into 16 bits and convert to Integer array
+        return array.chunked(1).map{it.toInt()}.toIntArray()
     }
-    // Check if given operation between two given operands produces a Carry Flag
-    fun checkCarry(op1: Int, op2: Int, operation: String) : Boolean {
-        //val binary1 = Integer.toBinaryString(op1)
-        //val binary2 = Integer.toBinaryString(op2)
-        // Split binary string to integer arrays
-        val binary1 = Integer.toBinaryString(op1).map {it.toInt()}
-        val binary2 = Integer.toBinaryString(op2).map {it.toInt()}
-        print("binary is: " + binary1[0] + "\n")
+    // Perform given operation (add, sub, ld) and update flags
+    fun performCalculation(op1: Int, op2: Int, operation: String) : IntArray {
+        var inputarray = convertToBits(op1, op2)
+        var resultarray = intArrayOf(0,0,0,0,0,0,0,0)
         var carry = 0
+        var halfcarry = 0
+        var zero = 0
         when(operation) {
             "ADD","add","+" -> {
-                //for(i in )
-                print(binary1 + " " + binary2)
-                return false
+                for (i in 7 downTo 0) {
+                    resultarray[i] = inputarray[i + 8] + inputarray[i] + carry
+                    if (resultarray[i] == 2) {
+                        resultarray[i] = 0
+                        carry = 1
+                    } else {
+                        carry = 0
+                    }
+                    if (i == 4) {
+                        if (carry == 1) {
+                            halfcarry == 1
+                        } else {
+                            halfcarry == 0
+                        }
+                    }
+                }
+                if (resultarray.sum() == 0) {
+                    zero = 1
+                } else {
+                    zero = 0
+                }
+                return resultarray
             }
             "SUB","sub","-" -> {
-                return false
+                return resultarray
             }
             "LD","ld","LOAD","load" -> {
-                return false
+                return resultarray
             }
         }
-        return true
+        return resultarray
     }
     // Check if given operation between two given operands produces a Half Carry Flag
     /*fun checkHalfCarry(op1: Int, op2: Int, operation: String) : Boolean {

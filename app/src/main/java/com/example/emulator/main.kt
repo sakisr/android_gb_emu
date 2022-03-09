@@ -11,5 +11,8 @@ fun main() {
         gb.decode()
     }
 
-    print(gb.convertToBits(0x01,0x02) + "\n")
+    print(gb.convertToBits(0x43,0x32).contentToString())
+    println()
+    print(gb.performCalculation(0x43,0x32, "ADD").contentToString())
+
 }

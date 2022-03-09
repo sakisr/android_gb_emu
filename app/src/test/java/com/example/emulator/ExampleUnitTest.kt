@@ -3,7 +3,6 @@ package com.example.emulator
 import org.junit.Test
 
 import org.junit.Assert.*
-import java.util.*
 
 /**
  * Example local unit test, which will execute on the development machine (host).
@@ -26,7 +25,7 @@ class GameboyBinaryCalculationTest() {
     @Test
     fun Gameboy_CheckCarry() {
         val gb = GameBoy()
-        assertEquals(gb.checkCarry(15, 15, "add"), true)
+        assertEquals(gb.performCalculation(15, 15, "add"), true)
     }
 
     @Test
