@@ -76,7 +76,7 @@ class GameBoy {
             0x18 -> regPC += memory[regPC].toInt()
             // Check flag Z, if it equals 0 then add immediate byte to Program Counter, else do nothing
             0x20 -> {
-                if(getFlag('Z') == false) {
+                if(getFlag('Z') == 0) {
                     regPC += 0x01
                     regPC += (memory[regPC-0x01].toUByte().toInt())
                 } else {
@@ -95,7 +95,7 @@ class GameBoy {
             }
             // Check flag Z, if it equals 1 then add immediate byte to Program Counter, else do nothing
             0x28 -> {
-                if(getFlag('Z') == true) {
+                if(getFlag('Z') == 1) {
                     regPC += 0x01
                     regPC += (memory[regPC-0x01].toUByte().toInt())
                 } else {
@@ -129,7 +129,7 @@ class GameBoy {
             0xb1 -> regAF[0] = regBC[1].or(regAF[0])
             // Check flag Z, if it equals 0 then pop Program Counter from stack
             0xc0 -> {
-                if(getFlag('Z') == false) {
+                if(getFlag('Z') == 0) {
                     regPC = getNextTwoBytes(regSP)
                     memory[regSP] = 0
                     regSP += 0x01
@@ -205,7 +205,7 @@ class GameBoy {
             }
             // If the (Accumulator Register - immediate byte) == 0, set flag Z to true
             0xfe -> {
-                if(regAF[0] == memory[regPC].toInt()) setFlag('Z', true)
+                if(regAF[0] == memory[regPC].toInt()) setFlag('Z', 1)
                 val lol = performCalculation(regAF[0], memory[regPC].toUByte().toInt(), "ADD")
                 regPC += 0x01
             }
@@ -251,12 +251,17 @@ class GameBoy {
         }
     } */
     // Set the Flag register according to flag name and bit
-    fun setFlag(flagName: Char, bitBoolean: Boolean) {
+    fun setFlag(flagName: Char, flagBit: Int) {
+        if (flagBit != 0 && flagBit != 1) {
+            print("Flag bit input: " + flagBit + "\nFlag must contain value of either '1' or '0'.\n")
+            print("Flag was not set.\n")
+            return
+        }
         // Convert integer in Flag Register to binary string
         var register = Integer.toBinaryString(regAF[1]).padStart(8, '0')
         // Convert boolean input to char
         var bit : Char
-        if (bitBoolean) {
+        if (flagBit == 1) {
             bit = '1'
         } else {
             bit = '0'
@@ -279,43 +284,43 @@ class GameBoy {
         return
     }
     // Check input flag and return its value
-    fun getFlag(flagName: Char) : Boolean {
+    fun getFlag(flagName: Char) : Int {
         when (flagName) {
             'Z', 'z' -> {
                 val flag = Integer.toBinaryString(regAF[1]).padStart(8, '0').get(0)
                 if (flag.equals('1')) {
-                    return true
+                    return 1
                 } else if (flag.equals('0')) {
-                    return false
+                    return 0
                 }
             }
             'N', 'n' -> {
                 val flag = Integer.toBinaryString(regAF[1]).padStart(8, '0').get(1)
                 if (flag.equals('1')) {
-                    return true
+                    return 1
                 } else if (flag.equals('0')) {
-                    return false
+                    return 0
                 }
             }
             'H', 'h' -> {
                 val flag = Integer.toBinaryString(regAF[1]).padStart(8, '0').get(2)
                 if (flag.equals('1')) {
-                    return true
+                    return 1
                 } else if (flag.equals('0')) {
-                    return false
+                    return 0
                 }
             }
             'C', 'c' -> {
                 val flag = Integer.toBinaryString(regAF[1]).padStart(8, '0').get(3)
                 if (flag.equals('1')) {
-                    return true
+                    return 1
                 } else if (flag.equals('0')) {
-                    return false
+                    return 0
                 }
             }
         }
         print("Wrong flag name given. Flags are Z,N,H,C.\n")
-        return false
+        return 0
     }
     // Little Endian - Get byte contents from next two memory cells and return them as an integer (Converting to unsigned byte first)
     fun getNextTwoBytes(index: Int) : Int {
@@ -365,26 +370,42 @@ class GameBoy {
         // Split string into 16 bits and convert to Integer array
         return array.chunked(1).map{it.toInt()}.toIntArray()
     }
+    // TODO: Complete function
+    fun addBinaryNumbers(num1: Int, num2: Int) : IntArray {
+        var inputarray = convertToBits(num1, num2)
+        var resultarray = intArrayOf(0,0,0,0,0,0,0,0)
+        var carry = 0
+        for (i in 7 downTo 0) {
+            resultarray[i] = inputarray[i+8] + (inputarray[i] + carry)
+            if (resultarray[i] == 2) {
+                resultarray[i] = 0
+                carry = 1
+            }
+        }
+    }
     // Perform given operation (add, sub, ld) and update flags
     fun performCalculation(op1: Int, op2: Int, operation: String) : IntArray {
         // Convert operands to bit arrays and initialize result array
         var inputarray = convertToBits(op1, op2)
         var resultarray = intArrayOf(0,0,0,0,0,0,0,0)
-        // Get current flags and convert Boolean to Integer
-        var carry = getFlag('C').compareTo(false)
-        var halfcarry = getFlag('H').compareTo(false)
-        var zero = getFlag('Z').compareTo(false)
+        // Get current flags
+        var carry = getFlag('C')
+        var halfcarry = getFlag('H')
+        var zero = getFlag('Z')
         // Perform input operation
         when(operation) {
             "ADD","add","+" -> {
+                carry = 0
                 for (i in 7 downTo 0) {
-                    resultarray[i] = inputarray[i + 8] + inputarray[i] + carry
+                    // Result = Op2 + (Op1 + Carry)
+                    resultarray[i] = inputarray[i+8] + (inputarray[i] + carry)
                     if (resultarray[i] == 2) {
                         resultarray[i] = 0
                         carry = 1
                     } else {
                         carry = 0
                     }
+                    // Check for half carry (Half carry can occur when going from bit[4] to bit[3], counting down from bit[7])
                     if (i == 4) {
                         if (carry == 1) {
                             halfcarry == 1
@@ -393,22 +414,35 @@ class GameBoy {
                         }
                     }
                 }
+                // Check for zero flag (Result == 0)
                 if (resultarray.sum() == 0) {
                     zero = 1
                 } else {
                     zero = 0
                 }
+                // Update flags
+                setFlag('Z', zero)
+                setFlag('N', 0)
+                setFlag('C', carry)
+                setFlag('H', halfcarry)
             }
+            // TODO: Complete subtraction
             "SUB","sub","-" -> {
+                carry = 0
+                // Using 1's complement subtraction
+                for (i in 7 downTo 0) {
+                    // Switch 1 to 0 and 0 to 1 in subtrahend
+                    if (inputarray[i] == 0) {
+                        inputarray[i] = 1
+                    } else if (inputarray[i] == 1) {
+                        inputarray[i] = 0
+                    }
+                }
+                // Add 1 to subtrahend
             }
             "LD","ld","LOAD","load" -> {
             }
         }
-        // TODO: Write intToBool() and boolToInt()
-        // Update flags
-        setFlag('C', carry)
-        setFlag('H', halfcarry)
-        setFlag('Z', zero)
         return resultarray
     }
     // Add input value to selected register (AF, BC, DE, HL)
