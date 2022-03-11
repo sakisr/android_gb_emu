@@ -370,24 +370,38 @@ class GameBoy {
         // Split string into 16 bits and convert to Integer array
         return array.chunked(1).map{it.toInt()}.toIntArray()
     }
-    // TODO: Complete function
-    fun addBinaryNumbers(num1: Int, num2: Int) : IntArray {
+    // TODO: Implement overflow
+    // Converts two integers to binary and adds them
+    // Returns array containing halfcarry, carry and binary addition result
+    fun intToBinaryAddition(num1: Int, num2: Int) : IntArray {
         var inputarray = convertToBits(num1, num2)
-        var resultarray = intArrayOf(0,0,0,0,0,0,0,0)
+        // resultarray[0] contains halfcarry, resultarray[1] contains carry and addition result is in positions resultarray[2] to resultarray[9]
+        var resultarray = intArrayOf(0,0,0,0,0,0,0,0,0,0)
         var carry = 0
-        for (i in 7 downTo 0) {
+        var halfcarry = 0
+        for (i in 9 downTo 2) {
+            // Result = Op2 + (Op1 + Carry)
             resultarray[i] = inputarray[i+8] + (inputarray[i] + carry)
+            // If addition is 1+1 then result=0 and carry=1
             if (resultarray[i] == 2) {
                 resultarray[i] = 0
                 carry = 1
             }
+            // Check for halfcarry between bits 4 and 5
+            if (i == 6) {
+                if (carry == 1) {
+                    halfcarry = 1
+                } else {
+                    halfcarry = 0
+                }
+            }
         }
+        resultarray[1] = carry
+        resultarray[0] = halfcarry
+        return resultarray
     }
     // Perform given operation (add, sub, ld) and update flags
     fun performCalculation(op1: Int, op2: Int, operation: String) : IntArray {
-        // Convert operands to bit arrays and initialize result array
-        var inputarray = convertToBits(op1, op2)
-        var resultarray = intArrayOf(0,0,0,0,0,0,0,0)
         // Get current flags
         var carry = getFlag('C')
         var halfcarry = getFlag('H')
@@ -395,6 +409,29 @@ class GameBoy {
         // Perform input operation
         when(operation) {
             "ADD","add","+" -> {
+                // Perform addition
+                var additionarray = intToBinaryAddition(op1, op2)
+                // Save carry and halfcarry flags from resultarray
+                carry = additionarray[1]
+                halfcarry = additionarray[0]
+                // Replace carry and halfcarry in resultarray with 0 to prepare for zero flag calculation
+                additionarray[0] = 0
+                additionarray[1] = 0
+                // Calculate resultarray sum for zero flag
+                if (additionarray.sum() == 0) {
+                    zero = 1
+                } else {
+                    zero = 0
+                }
+                // Update flags
+                setFlag('Z', zero)
+                setFlag('N', 0)
+                setFlag('C', carry)
+                setFlag('H', halfcarry)
+                // Copy result to new array
+                var resultarray = additionarray.copyOfRange(2, 9)
+                return resultarray
+                /*
                 carry = 0
                 for (i in 7 downTo 0) {
                     // Result = Op2 + (Op1 + Carry)
@@ -425,20 +462,42 @@ class GameBoy {
                 setFlag('N', 0)
                 setFlag('C', carry)
                 setFlag('H', halfcarry)
+                 */
+
             }
             // TODO: Complete subtraction
             "SUB","sub","-" -> {
                 carry = 0
+                // Convert to integer operands to binary
+                var subtractionarray = convertToBits(op1, op2)
                 // Using 1's complement subtraction
-                for (i in 7 downTo 0) {
-                    // Switch 1 to 0 and 0 to 1 in subtrahend
-                    if (inputarray[i] == 0) {
-                        inputarray[i] = 1
-                    } else if (inputarray[i] == 1) {
-                        inputarray[i] = 0
+                // Step 1 - Switch 1 to 0 and 0 to 1 in subtrahend
+                for (i in 15 downTo 8) {
+                    if (subtractionarray[i] == 0) {
+                        subtractionarray[i] = 1
+                    } else if (subtractionarray[i] == 1) {
+                        subtractionarray[i] = 0
                     }
                 }
-                // Add 1 to subtrahend
+                // Step 2 - Add 1 to subtrahend
+                if (subtractionarray[15] == 1) {
+                    subtractionarray[15] == 0
+                    carry = 1
+                } else {
+                    subtractionarray[15] = 1
+                    carry = 0
+                }
+                for (i in 14 downTo 8) {
+                    subtractionarray[i] = subtractionarray[i] + carry
+                    if (subtractionarray[i] == 2) {
+                        subtractionarray[i] = 0
+                        carry = 1
+                    } else {
+                        carry = 0
+                    }
+                }
+                // Step 3 - Perform addition with new subtrahend
+
             }
             "LD","ld","LOAD","load" -> {
             }
