@@ -2,9 +2,6 @@ package com.example.emulator
 
 import org.junit.Test
 
-import org.junit.Assert.*
-import java.util.*
-
 class GameboyBinaryCalculationTest() {
     @Test
     fun gameboy_test_convertToBits() {
@@ -21,5 +18,13 @@ class GameboyBinaryCalculationTest() {
         val result2 : IntArray = intArrayOf(1,1,1,0,0,0,0,1)
         assert(gb.performCalculation(0x01, 0x02, "add").contentEquals(result1))
         assert(gb.performCalculation(0x1a, 0xc7, "add").contentEquals(result2))
+    }
+    @Test
+    fun gameboy_test_binaryToInteger() {
+        val gb = GameBoy()
+        val result1 = 488
+        val result2 = 6543
+        assert(gb.binaryToInteger(intArrayOf(1,1,1,1,0,1,0,0,0)).equals(result1))
+        assert(gb.binaryToInteger(intArrayOf(1,1,0,0,1,1,0,0,0,1,1,1,1)).equals(result2))
     }
 }
