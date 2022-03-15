@@ -3,6 +3,7 @@ import java.io.File
 import java.io.FileOutputStream
 import java.time.Duration
 import java.time.Instant
+import kotlin.math.pow
 
 // Gameboy starting address is 0x0100
 val START_ADDRESS = 0x0100
@@ -370,6 +371,18 @@ class GameBoy {
         // Split string into 16 bits and convert to Integer array
         return array.chunked(1).map{it.toInt()}.toIntArray()
     }
+    // Converts a binary number (in IntArray form) to integer
+    fun binaryToInteger(binary: IntArray) : Int {
+        var sum = 0
+        var counter = 0
+        // Calculate decimal from powers of 2
+        for (i in (0..binary.lastIndex).reversed()) {
+            sum += binary[i] * 2.toDouble().pow(counter).toInt()
+            counter += 1
+        }
+        // Return result
+        return sum
+    }
     // TODO: Implement overflow
     // Converts two integers to binary and adds them
     // Returns array containing halfcarry, carry and binary addition result
@@ -398,10 +411,12 @@ class GameBoy {
         }
         resultarray[1] = carry
         resultarray[0] = halfcarry
+
         return resultarray
     }
     // Perform given operation (add, sub, ld) and update flags
     fun performCalculation(op1: Int, op2: Int, operation: String) : IntArray {
+        var resultarray = intArrayOf(0,0,0,0,0,0,0,0)
         // Get current flags
         var carry = getFlag('C')
         var halfcarry = getFlag('H')
@@ -423,6 +438,7 @@ class GameBoy {
                 } else {
                     zero = 0
                 }
+
                 // Update flags
                 setFlag('Z', zero)
                 setFlag('N', 0)
@@ -430,6 +446,7 @@ class GameBoy {
                 setFlag('H', halfcarry)
                 // Copy result to new array
                 var resultarray = additionarray.copyOfRange(2, 9)
+
                 return resultarray
                 /*
                 carry = 0
