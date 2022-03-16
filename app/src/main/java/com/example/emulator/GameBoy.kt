@@ -392,22 +392,30 @@ class GameBoy {
         var resultarray = intArrayOf(0,0,0,0,0,0,0,0,0,0)
         var carry = 0
         var halfcarry = 0
-        for (i in 9 downTo 2) {
+        var counter = 9
+        for (i in 7 downTo 0) {
             // Result = Op2 + (Op1 + Carry)
-            resultarray[i] = inputarray[i+8] + (inputarray[i] + carry)
+            resultarray[counter] = inputarray[i+8] + (inputarray[i] + carry)
+            //print(resultarray[counter].toString() + "=" + inputarray[i+8].toString() + "+(" + inputarray[i].toString() + "+" + carry.toString() + ")\n")
             // If addition is 1+1 then result=0 and carry=1
-            if (resultarray[i] == 2) {
-                resultarray[i] = 0
+            if (resultarray[counter] == 2) {
+                resultarray[counter] = 0
                 carry = 1
+            } else if (resultarray[counter] == 3) {
+                resultarray[counter] = 1
+                carry = 1
+            } else {
+                carry = 0
             }
             // Check for halfcarry between bits 4 and 5
-            if (i == 6) {
+            if (i == 4) {
                 if (carry == 1) {
                     halfcarry = 1
                 } else {
                     halfcarry = 0
                 }
             }
+            counter -= 1
         }
         resultarray[1] = carry
         resultarray[0] = halfcarry
@@ -429,6 +437,8 @@ class GameBoy {
                 // Save carry and halfcarry flags from resultarray
                 carry = additionarray[1]
                 halfcarry = additionarray[0]
+                // Copy result to new array
+                resultarray = additionarray.copyOfRange(2, additionarray.size)
                 // Replace carry and halfcarry in resultarray with 0 to prepare for zero flag calculation
                 additionarray[0] = 0
                 additionarray[1] = 0
@@ -444,10 +454,9 @@ class GameBoy {
                 setFlag('N', 0)
                 setFlag('C', carry)
                 setFlag('H', halfcarry)
-                // Copy result to new array
-                var resultarray = additionarray.copyOfRange(2, 9)
 
-                return resultarray
+
+                //return resultarray
                 /*
                 carry = 0
                 for (i in 7 downTo 0) {
@@ -484,6 +493,22 @@ class GameBoy {
             }
             // TODO: Complete subtraction
             "SUB","sub","-" -> {
+                var subtractionarray = convertToBits(op1, op2)
+                var carry = 0
+                var resultarray = intArrayOf(0,0,0,0,0,0,0,0,0,0)
+                var counter = 9
+                for (i in 7 downTo 0) {
+                    resultarray[counter] = subtractionarray[i] - (subtractionarray[i+8] + carry)
+                    if (resultarray[counter] == -1) {
+                        for (j in (i-1) downTo 0) {
+                            if (subtractionarray[j] == 1) {
+                                subtractionarray[j] = 0
+                                carry += 1
+                            }
+                        }
+                    }
+                }
+            /*
                 carry = 0
                 // Convert to integer operands to binary
                 var subtractionarray = convertToBits(op1, op2)
@@ -514,7 +539,7 @@ class GameBoy {
                     }
                 }
                 // Step 3 - Perform addition with new subtrahend
-
+*/
             }
             "LD","ld","LOAD","load" -> {
             }
