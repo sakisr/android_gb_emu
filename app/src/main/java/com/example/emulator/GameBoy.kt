@@ -495,15 +495,17 @@ class GameBoy {
             "SUB","sub","-" -> {
                 // Convert operands to bits
                 var subtractionarray = convertToBits(op1, op2)
+                print("subtractionarray is:\n")
+                print(subtractionarray.contentToString() + "\n")
 /*                var carry = 0
                 var halfcarry = 0
                 var zero = 0*/
                 // Flag to check if underflow happened (Underflow = 1, no underflow = 0)
                 var underflow = 0
                 // resultarray[0]-[1] is halfcarry and carry, resultarray[2]-[9] is subtraction result
-                var resultarray = intArrayOf(0,0,0,0,0,0,0,0,0,0)
+                var resultarray = intArrayOf(0,0,0,0,0,0,0,0)
                 // Counter for resultarray index which is different size than subtractionarray
-                var counter = 9
+                var counter = 7
                 // Subtract the two binary numbers contained in subtractionarray
                 for (i in 7 downTo 0) {
                     // Perform subtraction and place result into resultarray
@@ -522,6 +524,7 @@ class GameBoy {
                                         subtractionarray[k] = 1
                                     }
                                     carry = 1
+                                    subtractionarray[i-1] += carry
                                     break;
                                 }
                             }
@@ -531,8 +534,11 @@ class GameBoy {
                             }
                             // Reset carry
                             carry = 0
+                            // Change result
+                            resultarray[counter] = 1
                         }
                     }
+                    print(resultarray[counter].toString() + "=" + subtractionarray[i].toString() + "-" + subtractionarray[i+8].toString() + "\n")
                 }
                 // Calculate resultarray sum for zero flag
                 if (resultarray.sum() == 0) {
@@ -540,14 +546,15 @@ class GameBoy {
                 } else {
                     zero = 0
                 }
-                resultarray[0] = halfcarry
-                resultarray[1] = carry
-
                 // Update flags
                 setFlag('Z', zero)
                 setFlag('N', 1)
                 setFlag('C', carry)
                 setFlag('H', halfcarry)
+
+                print("result array is: \n")
+                print(resultarray.contentToString())
+                print("\n")
             /*
                 carry = 0
                 // Convert to integer operands to binary
