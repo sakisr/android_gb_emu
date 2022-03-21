@@ -495,15 +495,8 @@ class GameBoy {
             "SUB","sub","-" -> {
                 // Convert operands to bits
                 var subtractionarray = convertToBits(op1, op2)
-                print("subtractionarray is:\n")
-                print(subtractionarray.contentToString() + "\n")
-/*                var carry = 0
-                var halfcarry = 0
-                var zero = 0*/
                 // Flag to check if underflow happened (Underflow = 1, no underflow = 0)
                 var underflow = 0
-                // resultarray[0]-[1] is halfcarry and carry, resultarray[2]-[9] is subtraction result
-                var resultarray = intArrayOf(0,0,0,0,0,0,0,0)
                 // Counter for resultarray index which is different size than subtractionarray
                 var counter = 7
                 // Subtract the two binary numbers contained in subtractionarray
@@ -516,16 +509,21 @@ class GameBoy {
                         if (underflow == 1) {
                             resultarray[counter] = 0
                         } else {
-                            // If underflow hasn't occurred, find higher order '1', change it to '0', and change minuend digits between current position and higher order '1' from '0' to '1'
+                            // If underflow hasn't occurred, find higher order '1', change it to '0'
+                            // Then, change minuend digits between current position and higher order '1' from '0' to '1'
                             for (j in (i-1) downTo 0) {
+                                // If '1' is found in a minuend position, change it to '0'
                                 if (subtractionarray[j] == 1) {
                                     subtractionarray[j] = 0
-                                    for (k in (j+1) until (i-1)) {
+                                    // Change all digits between current position and starting position to '1'
+                                    for (k in (j+1) until (i)) {
                                         subtractionarray[k] = 1
                                     }
                                     carry = 1
-                                    subtractionarray[i-1] += carry
-                                    break;
+                                    if ((carry == 1) && (i == 4)) {
+                                        halfcarry = 1
+                                    }
+                                    break
                                 }
                             }
                             // If '1' isn't found, set underflow flag
@@ -538,7 +536,7 @@ class GameBoy {
                             resultarray[counter] = 1
                         }
                     }
-                    print(resultarray[counter].toString() + "=" + subtractionarray[i].toString() + "-" + subtractionarray[i+8].toString() + "\n")
+                    counter -= 1
                 }
                 // Calculate resultarray sum for zero flag
                 if (resultarray.sum() == 0) {
@@ -552,43 +550,9 @@ class GameBoy {
                 setFlag('C', carry)
                 setFlag('H', halfcarry)
 
-                print("result array is: \n")
-                print(resultarray.contentToString())
-                print("\n")
-            /*
-                carry = 0
-                // Convert to integer operands to binary
-                var subtractionarray = convertToBits(op1, op2)
-                // Using 1's complement subtraction
-                // Step 1 - Switch 1 to 0 and 0 to 1 in subtrahend
-                for (i in 15 downTo 8) {
-                    if (subtractionarray[i] == 0) {
-                        subtractionarray[i] = 1
-                    } else if (subtractionarray[i] == 1) {
-                        subtractionarray[i] = 0
-                    }
-                }
-                // Step 2 - Add 1 to subtrahend
-                if (subtractionarray[15] == 1) {
-                    subtractionarray[15] == 0
-                    carry = 1
-                } else {
-                    subtractionarray[15] = 1
-                    carry = 0
-                }
-                for (i in 14 downTo 8) {
-                    subtractionarray[i] = subtractionarray[i] + carry
-                    if (subtractionarray[i] == 2) {
-                        subtractionarray[i] = 0
-                        carry = 1
-                    } else {
-                        carry = 0
-                    }
-                }
-                // Step 3 - Perform addition with new subtrahend
-*/
             }
             "LD","ld","LOAD","load" -> {
+
             }
         }
         return resultarray
