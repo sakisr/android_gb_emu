@@ -22,16 +22,16 @@ class GameboyBinaryCalculationTest() {
         val result3add : IntArray = intArrayOf(1,1,1,1,1,1,1,0)
         // Subtraction
         val result1sub : IntArray = intArrayOf(0,0,0,0,0,0,1,1)
-        val result2sub : IntArray = intArrayOf(1,1,1,0,0,0,0,1)
-        val result3sub : IntArray = intArrayOf(1,1,1,0,0,0,0,1)
+        val result2sub : IntArray = intArrayOf(0,1,0,1,0,0,1,1)
+        val result3sub : IntArray = intArrayOf(0,0,0,0,0,0,0,0)
 
         assert(gb.performCalculation(0x01, 0x02, "add").contentEquals(result1add))
         assert(gb.performCalculation(0x1a, 0xc7, "add").contentEquals(result2add))
         assert(gb.performCalculation(0xff, 0xff, "add").contentEquals(result3add))
 
         assert(gb.performCalculation(0x04, 0x01, "sub").contentEquals(result1sub))
-//        assert(gb.performCalculation(0x1a, 0xc7, "sub").contentEquals(result2sub))
-//        assert(gb.performCalculation(0xff, 0xff, "sub").contentEquals(result3sub))
+        assert(gb.performCalculation(0x1a, 0xc7, "sub").contentEquals(result2sub))
+        assert(gb.performCalculation(0xff, 0xff, "sub").contentEquals(result3sub))
 
     }
     @Test
