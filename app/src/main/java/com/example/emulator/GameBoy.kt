@@ -122,10 +122,13 @@ class GameBoy {
             }
             // Load contents of Accumulator Register into Register B
             0x47 -> regBC[0] = regAF[0]
+            // TODO: FLAGS
             // Accumulator Register = Accumulator Register AND Accumulator Register
             0xa7 -> regAF[0] = regAF[0].and(regAF[0])
+            // TODO: FLAGS
             // Accumulator Register = Accumulator Register XOR Accumulator Register (Resets Accumulator Register)
             0xaf -> regAF[0] = regAF[0].xor(regAF[0])
+            // TODO: FLAGS
             // Accumulator Register = Register C OR Accumulator Register
             0xb1 -> regAF[0] = regBC[1].or(regAF[0])
             // Check flag Z, if it equals 0 then pop Program Counter from stack
@@ -174,6 +177,7 @@ class GameBoy {
                 memory[0xff00+memory[regPC]] = regAF[0].toByte()
                 regPC += 0x01
             }
+            // TODO: FLAGS
             // Store into Accumulator Register the results of (Accumulator Register AND immediate byte)
             0xe6 -> {
                 regAF[0] = (regAF[0] and memory[regPC].toUByte().toInt())
@@ -204,6 +208,7 @@ class GameBoy {
                 print("loading memory[" + Integer.toHexString(getNextTwoBytes(regPC)) + "]=0x" + Integer.toHexString(memory[getNextTwoBytes(regPC)].toUByte().toInt()) + "\n")
                 regPC += 0x02
             }
+            // TODO: FLAGS
             // If the (Accumulator Register - immediate byte) == 0, set flag Z to true
             0xfe -> {
                 if(regAF[0] == memory[regPC].toInt()) setFlag('Z', 1)
