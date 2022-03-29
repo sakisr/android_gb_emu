@@ -496,7 +496,9 @@ class GameBoy {
                  */
 
             }
-            // TODO: Complete subtraction
+            "ADC", "adc" -> {
+
+            }
             "SUB","sub","-" -> {
                 // Convert operands to bits
                 var subtractionarray = convertToBits(op1, op2)
@@ -556,9 +558,55 @@ class GameBoy {
                 setFlag('H', halfcarry)
 
             }
+            "SBC", "sbc" -> {
+
+            }
             "LD","ld","LOAD","load" -> {
 
             }
+            "AND", "and" -> {
+
+                setFlag('Z', zero)
+                setFlag('N', 0)
+                setFlag('C', 1)
+                setFlag('H', 0)
+            }
+            "OR", "or" -> {
+
+                setFlag('Z', zero)
+                setFlag('N', 0)
+                setFlag('C', 0)
+                setFlag('H', 0)
+            }
+            "XOR", "xor" -> {
+
+                setFlag('Z', zero)
+                setFlag('N', 0)
+                setFlag('C', 0)
+                setFlag('H', 0)
+            }
+            "INC", "inc", "increase" -> {
+
+            }
+            "DEC", "dec", "decrease" -> {
+
+            }
+            "CP", "cp", "copy" -> {
+
+            }
+            "CPL", "cpl" -> {
+
+            }
+            "CPF", "cpf" -> {
+
+            }
+            "DAA", "daa" -> {
+
+            }
+            "SCF", "scf" -> {
+
+            }
+
         }
         return resultarray
     }
