@@ -496,8 +496,30 @@ class GameBoy {
                  */
 
             }
+            // TODO: Get flags and add to operands
             "ADC", "adc" -> {
+                // Perform addition
+                var additionarray = intToBinaryAddition(op1, op2)
+                // Save carry and halfcarry flags from resultarray
+                carry = additionarray[1]
+                halfcarry = additionarray[0]
+                // Copy result to new array
+                resultarray = additionarray.copyOfRange(2, additionarray.size)
+                // Replace carry and halfcarry in resultarray with 0 to prepare for zero flag calculation
+                additionarray[0] = 0
+                additionarray[1] = 0
+                // Calculate resultarray sum for zero flag
+                if (additionarray.sum() == 0) {
+                    zero = 1
+                } else {
+                    zero = 0
+                }
 
+                // Update flags
+                setFlag('Z', zero)
+                setFlag('N', 0)
+                setFlag('C', carry)
+                setFlag('H', halfcarry)
             }
             "SUB","sub","-" -> {
                 // Convert operands to bits
