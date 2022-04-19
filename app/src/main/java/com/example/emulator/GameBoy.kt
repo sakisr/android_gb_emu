@@ -427,6 +427,101 @@ class GameBoy {
 
         return resultarray
     }
+    // Converts two integers to binary and adds them with the carry
+    // Returns array containing halfcarry, carry and binary addition result
+    fun intToBinaryAdditionWithCarry(num1: Int, num2: Int) : IntArray {
+        var inputarray = convertToBits(num1, num2)
+        // resultarray[0] contains halfcarry, resultarray[1] contains carry and addition result is in positions resultarray[2] to resultarray[9]
+        var resultarray = intArrayOf(0,0,0,0,0,0,0,0,0,0)
+        var carry = 1
+        var halfcarry = 0
+        var counter = 9
+        for (i in 7 downTo 0) {
+            // Result = Op2 + (Op1 + Carry)
+            resultarray[counter] = inputarray[i+8] + (inputarray[i] + carry)
+            //print(resultarray[counter].toString() + "=" + inputarray[i+8].toString() + "+(" + inputarray[i].toString() + "+" + carry.toString() + ")\n")
+            // If addition is 1+1 then result=0 and carry=1
+            if (resultarray[counter] == 2) {
+                resultarray[counter] = 0
+                carry = 1
+            } else if (resultarray[counter] == 3) {
+                resultarray[counter] = 1
+                carry = 1
+            } else {
+                carry = 0
+            }
+            // Check for halfcarry between bits 4 and 5
+            if (i == 4) {
+                if (carry == 1) {
+                    halfcarry = 1
+                } else {
+                    halfcarry = 0
+                }
+            }
+            counter -= 1
+        }
+        resultarray[1] = carry
+        resultarray[0] = halfcarry
+
+        return resultarray
+    }
+    // Converts two integers to binary and subtracts them
+    // Returns array containing halfcarry, carry and binary subtraction result
+    fun intToBinarySubtraction(num1: Int, num2: Int) : IntArray {
+        // Convert operands to bits
+        var subtractionarray = convertToBits(num1, num2)
+        // resultarray[0] contains halfcarry, resultarray[1] contains carry and addition result is in positions resultarray[2] to resultarray[9]
+        var resultarray = intArrayOf(0,0,0,0,0,0,0,0,0,0)
+        var carry = 0
+        var halfcarry = 0
+        // Flag to check if underflow happened (Underflow = 1, no underflow = 0)
+        var underflow = 0
+        // Counter for resultarray index which is different size than subtractionarray
+        var counter = 9
+        // Subtract the two binary numbers contained in subtractionarray
+        for (i in 7 downTo 0) {
+            // Perform subtraction and place result into resultarray
+            resultarray[counter] = subtractionarray[i] - subtractionarray[i+8]
+            // If a carry is necessary, search higher order digits for '1'
+            if (resultarray[counter] == -1) {
+                // If underflow has already occurred, change subtraction result to '0'
+                if (underflow == 1) {
+                    resultarray[counter] = 0
+                } else {
+                    // If underflow hasn't occurred, find higher order '1', change it to '0'
+                    // Then, change minuend digits between current position and higher order '1' from '0' to '1'
+                    for (j in (i-1) downTo 0) {
+                        // If '1' is found in a minuend position, change it to '0'
+                        if (subtractionarray[j] == 1) {
+                            subtractionarray[j] = 0
+                            // Change all digits between current position and starting position to '1'
+                            for (k in (j+1) until (i)) {
+                                subtractionarray[k] = 1
+                            }
+                            carry = 1
+                            if ((carry == 1) && (i == 4)) {
+                                halfcarry = 1
+                            }
+                            break
+                        }
+                    }
+                    // If '1' isn't found, set underflow flag
+                    if (carry == 0) {
+                        underflow = 1
+                    }
+                    // Reset carry
+                    carry = 0
+                    // Change result
+                    resultarray[counter] = 1
+                }
+            }
+            counter -= 1
+        }
+        resultarray[1] = carry
+        resultarray[0] = halfcarry
+
+        return resultarray
+    }
     // Perform given operation (add, sub, ld) and update flags
     fun performCalculation(op1: Int, op2: Int, operation: String) : IntArray {
         var resultarray = intArrayOf(0,0,0,0,0,0,0,0)
@@ -453,13 +548,11 @@ class GameBoy {
                 } else {
                     zero = 0
                 }
-
                 // Update flags
                 setFlag('Z', zero)
                 setFlag('N', 0)
                 setFlag('C', carry)
                 setFlag('H', halfcarry)
-
 
                 //return resultarray
                 /*
@@ -497,18 +590,15 @@ class GameBoy {
 
             }
             "ADC", "adc" -> {
-                val previouscarry = getFlag('C')
-                // Perform addition
-                var additionarray = intToBinaryAddition(op1, op2)
+                var additionarray : IntArray
+                // Check for existing carry and perform addition
+                if(getFlag('C') == 1) {
+                    additionarray = intToBinaryAdditionWithCarry(op1, op2)
+                } else {
+                    additionarray = intToBinaryAddition(op1, op2)
+                }
                 val carry = additionarray[1]
                 val halfcarry = additionarray[0]
-                // Update flags
-                setFlag('N', 0)
-                setFlag('C', carry)
-                setFlag('H', halfcarry)
-                var op3 : Int
-                op3 = binaryToInteger(additionarray.copyOfRange(2, additionarray.size))
-                additionarray = intToBinaryAddition(op3, previouscarry)
                 // Copy result to new array
                 resultarray = additionarray.copyOfRange(2, additionarray.size)
                 // Calculate resultarray sum for zero flag
@@ -517,13 +607,30 @@ class GameBoy {
                 } else {
                     zero = 0
                 }
-
-                // Update zero flag
+                // Update flags
                 setFlag('Z', zero)
+                setFlag('N', 0)
+                setFlag('C', carry)
+                setFlag('H', halfcarry)
             }
             "SUB","sub","-" -> {
                 // Convert operands to bits
-                var subtractionarray = convertToBits(op1, op2)
+                var subtractionarray = intToBinarySubtraction(op1, op2) //onvertToBits(op1, op2)
+                val carry = subtractionarray[1]
+                val halfcarry = subtractionarray[0]
+                resultarray = subtractionarray.copyOfRange(2, subtractionarray.size)
+                // Calculate resultarray sum for zero flag
+                if (resultarray.sum() == 0) {
+                    zero = 1
+                } else {
+                    zero = 0
+                }
+                // Update flags
+                setFlag('Z', zero)
+                setFlag('N', 1)
+                setFlag('C', carry)
+                setFlag('H', halfcarry)
+            /*
                 // Flag to check if underflow happened (Underflow = 1, no underflow = 0)
                 var underflow = 0
                 // Counter for resultarray index which is different size than subtractionarray
@@ -566,19 +673,7 @@ class GameBoy {
                         }
                     }
                     counter -= 1
-                }
-                // Calculate resultarray sum for zero flag
-                if (resultarray.sum() == 0) {
-                    zero = 1
-                } else {
-                    zero = 0
-                }
-                // Update flags
-                setFlag('Z', zero)
-                setFlag('N', 1)
-                setFlag('C', carry)
-                setFlag('H', halfcarry)
-
+                }*/
             }
             "SBC", "sbc" -> {
 
