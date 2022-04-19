@@ -427,7 +427,7 @@ class GameBoy {
 
         return resultarray
     }
-    // Converts two integers to binary and adds them with the carry
+    // Converts two integers to binary and adds them with existing carry
     // Returns array containing halfcarry, carry and binary addition result
     fun intToBinaryAdditionWithCarry(num1: Int, num2: Int) : IntArray {
         var inputarray = convertToBits(num1, num2)
@@ -482,6 +482,69 @@ class GameBoy {
         for (i in 7 downTo 0) {
             // Perform subtraction and place result into resultarray
             resultarray[counter] = subtractionarray[i] - subtractionarray[i+8]
+            // If a carry is necessary, search higher order digits for '1'
+            if (resultarray[counter] == -1) {
+                // If underflow has already occurred, change subtraction result to '0'
+                if (underflow == 1) {
+                    resultarray[counter] = 0
+                } else {
+                    // If underflow hasn't occurred, find higher order '1', change it to '0'
+                    // Then, change minuend digits between current position and higher order '1' from '0' to '1'
+                    for (j in (i-1) downTo 0) {
+                        // If '1' is found in a minuend position, change it to '0'
+                        if (subtractionarray[j] == 1) {
+                            subtractionarray[j] = 0
+                            // Change all digits between current position and starting position to '1'
+                            for (k in (j+1) until (i)) {
+                                subtractionarray[k] = 1
+                            }
+                            carry = 1
+                            if ((carry == 1) && (i == 4)) {
+                                halfcarry = 1
+                            }
+                            break
+                        }
+                    }
+                    // If '1' isn't found, set underflow flag
+                    if (carry == 0) {
+                        underflow = 1
+                    }
+                    // Reset carry
+                    carry = 0
+                    // Change result
+                    resultarray[counter] = 1
+                }
+            }
+            counter -= 1
+        }
+        resultarray[1] = carry
+        resultarray[0] = halfcarry
+
+        return resultarray
+    }
+    // TODO: Complete subtraction with carry/Add case where result is -2 in the first subtraction due to carry
+    // Converts two integers to binary and subtracts them with existing carry (Num1 - Num2 - carry)
+    // Returns array containing halfcarry, carry and binary subtraction result
+    fun intToBinarySubtractionWithCarry(num1: Int, num2: Int) : IntArray {
+        // Convert operands to bits
+        var subtractionarray = convertToBits(num1, num2)
+        // resultarray[0] contains halfcarry, resultarray[1] contains carry and addition result is in positions resultarray[2] to resultarray[9]
+        var resultarray = intArrayOf(0,0,0,0,0,0,0,0,0,0)
+        var carry = 1
+        var halfcarry = 0
+        // Flag to check if underflow happened (Underflow = 1, no underflow = 0)
+        var underflow = 0
+        // Counter for resultarray index which is different size than subtractionarray
+        var counter = 9
+        // Subtract the two binary numbers contained in subtractionarray
+        for (i in 7 downTo 0) {
+            // Subtract existing carry in first subtraction
+            if(i != 7) {
+                // Perform subtraction and place result into resultarray
+                resultarray[counter] = subtractionarray[i] - subtractionarray[i+8]
+            } else {
+                resultarray[counter] = subtractionarray[i] - subtractionarray[i+8] - carry
+            }
             // If a carry is necessary, search higher order digits for '1'
             if (resultarray[counter] == -1) {
                 // If underflow has already occurred, change subtraction result to '0'
@@ -615,7 +678,7 @@ class GameBoy {
             }
             "SUB","sub","-" -> {
                 // Convert operands to bits
-                var subtractionarray = intToBinarySubtraction(op1, op2) //onvertToBits(op1, op2)
+                var subtractionarray = intToBinarySubtraction(op1, op2) //convertToBits(op1, op2)
                 val carry = subtractionarray[1]
                 val halfcarry = subtractionarray[0]
                 resultarray = subtractionarray.copyOfRange(2, subtractionarray.size)
@@ -676,7 +739,28 @@ class GameBoy {
                 }*/
             }
             "SBC", "sbc" -> {
-
+                //TODO: Implement subtraction with carry
+                var subtractionarray : IntArray
+                // Check for existing carry and perform addition
+                if(getFlag('C') == 1) {
+                    subtractionarray = intToBinarySubtractionWithCarry(op1, op2)
+                } else {
+                    subtractionarray = intToBinarySubtraction(op1, op2)
+                }
+                val carry = subtractionarray[1]
+                val halfcarry = subtractionarray[0]
+                resultarray = subtractionarray.copyOfRange(2, subtractionarray.size)
+                // Calculate resultarray sum for zero flag
+                if (resultarray.sum() == 0) {
+                    zero = 1
+                } else {
+                    zero = 0
+                }
+                // Update flags
+                setFlag('Z', zero)
+                setFlag('N', 1)
+                setFlag('C', carry)
+                setFlag('H', halfcarry)
             }
             "LD","ld","LOAD","load" -> {
 
