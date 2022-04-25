@@ -36,7 +36,12 @@ class GameBoy {
 
     // Fetch current instruction (opcode) from memory at the address pointed by the program counter, and increase program counter
     fun fetch() {
-        print("Running opcode: 0x" + Integer.toHexString(memory[regPC].toUByte().toInt()) + " at memory address: 0x" + Integer.toHexString(regPC) + " | regA is: 0x" + Integer.toHexString(regAF[0]) + "\n")
+        print("Running opcode: 0x" + Integer.toHexString(memory[regPC].toUByte().toInt()) + " at memory address: 0x" + Integer.toHexString(regPC) +
+                " | regAF: " + Integer.toHexString(regAF[0]).padStart(2, '0') + Integer.toHexString(regAF[1]).padStart(2, '0') +
+                " | regBC: " + Integer.toHexString(regBC[0]).padStart(2, '0') + Integer.toHexString(regBC[1]).padStart(2, '0') +
+                " | regDE: " + Integer.toHexString(regDE[0]).padStart(2, '0') + Integer.toHexString(regDE[1]).padStart(2, '0') +
+                " | regHL: " + Integer.toHexString(regHL[0]).padStart(2, '0') + Integer.toHexString(regHL[1]).padStart(2, '0') +
+                "\n")
         opcode = (memory[regPC].toInt())
         regPC += 0x01
     }
@@ -122,15 +127,38 @@ class GameBoy {
             }
             // Load contents of Accumulator Register into Register B
             0x47 -> regBC[0] = regAF[0]
-            // TODO: FLAGS
             // Accumulator Register = Accumulator Register AND Accumulator Register
-            0xa7 -> regAF[0] = regAF[0].and(regAF[0])
-            // TODO: FLAGS
+            0xa7 -> {
+                regAF[0] = regAF[0].and(regAF[0])
+                if(regAF[0] == 0) {
+                    setFlag('Z', 1)
+                } else {
+                    setFlag('Z', 0)
+                }
+                setFlag('N', 0)
+                setFlag('H', 1)
+                setFlag('C', 0)
+            }
             // Accumulator Register = Accumulator Register XOR Accumulator Register (Resets Accumulator Register)
-            0xaf -> regAF[0] = regAF[0].xor(regAF[0])
-            // TODO: FLAGS
+            0xaf -> {
+                regAF[0] = regAF[0].xor(regAF[0])
+                setFlag('Z', 1)
+                setFlag('N', 0)
+                setFlag('H', 0)
+                setFlag('C', 0)
+            }
             // Accumulator Register = Register C OR Accumulator Register
-            0xb1 -> regAF[0] = regBC[1].or(regAF[0])
+            0xb1 -> {
+                regAF[0] = regBC[1].or(regAF[0])
+                if(regAF[0] == 0) {
+                    setFlag('Z', 1)
+                } else {
+                    setFlag('Z', 0)
+                }
+                setFlag('N', 0)
+                setFlag('H', 0)
+                setFlag('C', 0)
+            }
             // Check flag Z, if it equals 0 then pop Program Counter from stack
             0xc0 -> {
                 if(getFlag('Z') == 0) {
@@ -177,11 +205,18 @@ class GameBoy {
                 memory[0xff00+memory[regPC]] = regAF[0].toByte()
                 regPC += 0x01
             }
-            // TODO: FLAGS
             // Store into Accumulator Register the results of (Accumulator Register AND immediate byte)
             0xe6 -> {
                 regAF[0] = (regAF[0] and memory[regPC].toUByte().toInt())
                 regPC += 0x01
+                if(regAF[0] == 0) {
+                    setFlag('Z', 1)
+                } else {
+                    setFlag('Z', 0)
+                }
+                setFlag('N', 0)
+                setFlag('H', 1)
+                setFlag('C', 0)
             }
             // Store Accumulator Register values to memory address (or register) pointed by next two bytes
             0xea -> {
@@ -211,8 +246,9 @@ class GameBoy {
             // TODO: FLAGS
             // If the (Accumulator Register - immediate byte) == 0, set flag Z to true
             0xfe -> {
-                if(regAF[0] == memory[regPC].toInt()) setFlag('Z', 1)
-                val lol = performCalculation(regAF[0], memory[regPC].toUByte().toInt(), "ADD")
+                performCalculation(regAF[0], memory[regPC].toInt(), "SUB")
+                //if(regAF[0] == memory[regPC].toInt()) setFlag('Z', 1)
+                //val lol = performCalculation(regAF[0], memory[regPC].toUByte().toInt(), "ADD")
                 regPC += 0x01
             }
             else -> {
@@ -766,21 +802,18 @@ class GameBoy {
 
             }
             "AND", "and" -> {
-
                 setFlag('Z', zero)
                 setFlag('N', 0)
                 setFlag('C', 1)
                 setFlag('H', 0)
             }
             "OR", "or" -> {
-
                 setFlag('Z', zero)
                 setFlag('N', 0)
                 setFlag('C', 0)
                 setFlag('H', 0)
             }
             "XOR", "xor" -> {
-
                 setFlag('Z', zero)
                 setFlag('N', 0)
                 setFlag('C', 0)
@@ -990,14 +1023,14 @@ class GameBoy {
     }
     // Print status of registers for debugging
     fun printRegisterStatus() {
-        print("-------------------------\n")
-        print("|\t\tREGISTERS\t\t|\n")
-        print("-------------------------\n")
-        print("|\tA: 0x" + Integer.toHexString(regAF[0]).padStart(2, '0') + "\tF: 0x" + Integer.toHexString(regAF[1]).padStart(2, '0') + "\t\t|\n")
-        print("|\tB: 0x" + Integer.toHexString(regBC[0]).padStart(2, '0') + "\tC: 0x" + Integer.toHexString(regBC[1]).padStart(2, '0') + "\t\t|\n")
-        print("|\tD: 0x" + Integer.toHexString(regDE[0]).padStart(2, '0') + "\tE: 0x" + Integer.toHexString(regDE[1]).padStart(2, '0') + "\t\t|\n")
-        print("|\tH: 0x" + Integer.toHexString(regHL[0]).padStart(2, '0') + "\tL: 0x" + Integer.toHexString(regHL[1]).padStart(2, '0') + "\t\t|\n")
-        print("-------------------------\n")
+        print("-------------------------------------\n")
+        print("|\t\tREGISTERS\t\t|\tFLAGS\t|\n")
+        print("-------------------------------------\n")
+        print("|\tA: 0x" + Integer.toHexString(regAF[0]).padStart(2, '0') + "\tF: 0x" + Integer.toHexString(regAF[1]).padStart(2, '0') + "\t\t|\t Z: " + getFlag('Z') + "\t|\n")
+        print("|\tB: 0x" + Integer.toHexString(regBC[0]).padStart(2, '0') + "\tC: 0x" + Integer.toHexString(regBC[1]).padStart(2, '0') + "\t\t|\t N: " + getFlag('N') + "\t|\n")
+        print("|\tD: 0x" + Integer.toHexString(regDE[0]).padStart(2, '0') + "\tE: 0x" + Integer.toHexString(regDE[1]).padStart(2, '0') + "\t\t|\t H: " + getFlag('H') + "\t|\n")
+        print("|\tH: 0x" + Integer.toHexString(regHL[0]).padStart(2, '0') + "\tL: 0x" + Integer.toHexString(regHL[1]).padStart(2, '0') + "\t\t|\t C: " + getFlag('C') + "\t|\n")
+        print("-------------------------------------\n")
         print(" Stack Pointer is: 0x" + Integer.toHexString(regSP) + "\n")
         print(" Program Counter is: 0x" + Integer.toHexString(regPC) + "\n")
         print(" Instruction 0x" + Integer.toHexString(opcode.toUByte().toInt()).padStart(2, '0') + " at memory address 0x" + Integer.toHexString(regPC-1).padStart(5, '0') + " not implemented\n")
