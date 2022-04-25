@@ -10,9 +10,4 @@ fun main() {
         gb.fetch()
         gb.decode()
     }
-
-    print(gb.convertToBits(0x43,0x32).contentToString())
-    println()
-    print(gb.performCalculation(0x43,0x32, "ADD").contentToString())
-
 }
