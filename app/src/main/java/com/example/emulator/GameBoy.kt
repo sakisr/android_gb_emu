@@ -37,10 +37,14 @@ class GameBoy {
     // Fetch current instruction (opcode) from memory at the address pointed by the program counter, and increase program counter
     fun fetch() {
         print("Running opcode: 0x" + Integer.toHexString(memory[regPC].toUByte().toInt()) + " at memory address: 0x" + Integer.toHexString(regPC) +
-                " | regAF: " + Integer.toHexString(regAF[0]).padStart(2, '0') + Integer.toHexString(regAF[1]).padStart(2, '0') +
-                " | regBC: " + Integer.toHexString(regBC[0]).padStart(2, '0') + Integer.toHexString(regBC[1]).padStart(2, '0') +
-                " | regDE: " + Integer.toHexString(regDE[0]).padStart(2, '0') + Integer.toHexString(regDE[1]).padStart(2, '0') +
-                " | regHL: " + Integer.toHexString(regHL[0]).padStart(2, '0') + Integer.toHexString(regHL[1]).padStart(2, '0') +
+                "\n\t | regAF: " + Integer.toHexString(regAF[0]).padStart(2, '0') + Integer.toHexString(regAF[1]).padStart(2, '0') +
+                "\t|\tZ: " + getFlag('Z') +
+                "\n\t | regBC: " + Integer.toHexString(regBC[0]).padStart(2, '0') + Integer.toHexString(regBC[1]).padStart(2, '0') +
+                "\t|\tN: " + getFlag('N') +
+                "\n\t | regDE: " + Integer.toHexString(regDE[0]).padStart(2, '0') + Integer.toHexString(regDE[1]).padStart(2, '0') +
+                "\t|\tH: " + getFlag('H') +
+                "\n\t | regHL: " + Integer.toHexString(regHL[0]).padStart(2, '0') + Integer.toHexString(regHL[1]).padStart(2, '0') +
+                "\t|\tC: " + getFlag('C') +
                 "\n")
         opcode = (memory[regPC].toInt())
         regPC += 0x01
@@ -501,6 +505,25 @@ class GameBoy {
 
         return resultarray
     }
+    fun intToBinarySubtractionHex(num1: Int, num2: Int) : Int {
+        var result = num1 - num2
+        if(result<0) {
+            result = result + 255
+            setFlag('C' , 1)
+        }
+        if (result == 0) {
+            setFlag('Z', 1)
+        } else {
+            setFlag('Z', 1)
+        }
+        setFlag('N', 1)
+        if ((num1.and(0xf)+(num2.and(0xf))) > 0xf) {
+            setFlag('H', 1)
+        } else {
+            setFlag('H', 0)
+        }
+        return result
+    }
     // Converts two integers to binary and subtracts them
     // Returns array containing halfcarry, carry and binary subtraction result
     fun intToBinarySubtraction(num1: Int, num2: Int) : IntArray {
@@ -714,21 +737,23 @@ class GameBoy {
             }
             "SUB","sub","-" -> {
                 // Convert operands to bits
-                var subtractionarray = intToBinarySubtraction(op1, op2) //convertToBits(op1, op2)
-                val carry = subtractionarray[1]
-                val halfcarry = subtractionarray[0]
-                resultarray = subtractionarray.copyOfRange(2, subtractionarray.size)
+                // var subtractionarray = intToBinarySubtraction(op1, op2) //convertToBits(op1, op2)
+                var result = intToBinarySubtractionHex(op1, op2) //convertToBits(op1, op2)
+                //return result
+                //val carry = subtractionarray[1]
+                //val halfcarry = subtractionarray[0]
+                //resultarray = subtractionarray.copyOfRange(2, subtractionarray.size)
                 // Calculate resultarray sum for zero flag
-                if (resultarray.sum() == 0) {
-                    zero = 1
-                } else {
-                    zero = 0
-                }
+                //if (resultarray.sum() == 0) {
+                //    zero = 1
+                //} else {
+                //    zero = 0
+                //}
                 // Update flags
-                setFlag('Z', zero)
-                setFlag('N', 1)
-                setFlag('C', carry)
-                setFlag('H', halfcarry)
+                //setFlag('Z', zero)
+                //setFlag('N', 1)
+                //setFlag('H', halfcarry)
+                //setFlag('C', carry)
             /*
                 // Flag to check if underflow happened (Underflow = 1, no underflow = 0)
                 var underflow = 0
