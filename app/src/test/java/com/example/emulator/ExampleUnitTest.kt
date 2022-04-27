@@ -20,10 +20,12 @@ class GameboyBinaryCalculationTest() {
         val result1add : IntArray = intArrayOf(0,0,0,0,0,0,1,1)
         val result2add : IntArray = intArrayOf(1,1,1,0,0,0,0,1)
         val result3add : IntArray = intArrayOf(1,1,1,1,1,1,1,0)
+        val result4add : IntArray = intArrayOf(0,0,0,0,0,0,0,1)
 
         assert(gb.performCalculation(0x01, 0x02, "add").contentEquals(result1add))
         assert(gb.performCalculation(0x1a, 0xc7, "add").contentEquals(result2add))
         assert(gb.performCalculation(0xff, 0xff, "add").contentEquals(result3add))
+        assert(gb.performCalculation(0xfa, 0x06, "add").contentEquals(result4add))
 
         // Addition with carry
         val result1adc : IntArray = intArrayOf(1,1,1,0,0,0,1,0)
@@ -38,10 +40,12 @@ class GameboyBinaryCalculationTest() {
         val result1sub : IntArray = intArrayOf(0,0,0,0,0,0,1,1)
         val result2sub : IntArray = intArrayOf(0,1,0,1,0,0,1,1)
         val result3sub : IntArray = intArrayOf(0,0,0,0,0,0,0,0)
+        val result4sub : IntArray = intArrayOf(1,1,1,0,1,1,1,1)
 
         assert(gb.performCalculation(0x04, 0x01, "sub").contentEquals(result1sub))
         assert(gb.performCalculation(0x1a, 0xc7, "sub").contentEquals(result2sub))
         assert(gb.performCalculation(0xff, 0xff, "sub").contentEquals(result3sub))
+        //assert(gb.performCalculation(0x01, 0x11, "sub").contentEquals(result4sub))
 
     }
     @Test
