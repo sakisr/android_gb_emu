@@ -510,11 +510,13 @@ class GameBoy {
         if(result<0) {
             result = result + 255
             setFlag('C' , 1)
+        } else {
+            setFlag('C' , 0)
         }
         if (result == 0) {
             setFlag('Z', 1)
         } else {
-            setFlag('Z', 1)
+            setFlag('Z', 0)
         }
         setFlag('N', 1)
         if ((num1.and(0xf)+(num2.and(0xf))) > 0xf) {
