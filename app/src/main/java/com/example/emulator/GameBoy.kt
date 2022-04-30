@@ -45,6 +45,7 @@ class GameBoy {
                 "\t|\tH: " + getFlag('H') +
                 "\n\t | regHL: " + Integer.toHexString(regHL[0]).padStart(2, '0') + Integer.toHexString(regHL[1]).padStart(2, '0') +
                 "\t|\tC: " + getFlag('C') +
+                "\n\t | regPC: " + Integer.toHexString(regPC).padStart(4,'0') +
                 "\n")
         opcode = (memory[regPC].toInt())
         regPC += 0x01
@@ -88,9 +89,11 @@ class GameBoy {
             0x20 -> {
                 if(getFlag('Z') == 0) {
                     regPC += 0x01
+                    println("regpc is: 0x" + Integer.toHexString(regPC) + " next byte: 0x" + Integer.toHexString(memory[regPC-1].toUByte().toInt()))
                     regPC += (memory[regPC-0x01].toUByte().toInt())
+                    println("regpc is: 0x" + Integer.toHexString(regPC))
                 } else {
-                    regPC += 0x01
+                    regPC += 0x02
                 }
             }
             // Load next two bytes into registers HL
@@ -250,7 +253,8 @@ class GameBoy {
             // TODO: FLAGS
             // If the (Accumulator Register - immediate byte) == 0, set flag Z to true
             0xfe -> {
-                performCalculation(regAF[0], memory[regPC].toInt(), "SUB")
+                intToBinarySubtractionHex(regAF[0], memory[regPC].toInt())
+                //performCalculation(regAF[0], memory[regPC].toInt(), "SUB")
                 //if(regAF[0] == memory[regPC].toInt()) setFlag('Z', 1)
                 //val lol = performCalculation(regAF[0], memory[regPC].toUByte().toInt(), "ADD")
                 regPC += 0x01
@@ -504,6 +508,27 @@ class GameBoy {
         resultarray[0] = halfcarry
 
         return resultarray
+    }
+    fun intToBinaryAdditionHex(num1: Int, num2: Int) : Int {
+        var result = num1 + num2
+        if(result>255) {
+            result = result - 255
+            setFlag('C' , 1)
+        } else {
+            setFlag('C' , 0)
+        }
+        if (result == 0) {
+            setFlag('Z', 1)
+        } else {
+            setFlag('Z', 0)
+        }
+        setFlag('N', 0)
+        if ((num1.and(0xf)+(num2.and(0xf))) > 0xf) {
+            setFlag('H', 1)
+        } else {
+            setFlag('H', 0)
+        }
+        return result
     }
     fun intToBinarySubtractionHex(num1: Int, num2: Int) : Int {
         var result = num1 - num2
