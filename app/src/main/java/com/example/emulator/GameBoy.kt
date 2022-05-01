@@ -90,7 +90,8 @@ class GameBoy {
                 if(getFlag('Z') == 0) {
                     regPC += 0x01
                     println("regpc is: 0x" + Integer.toHexString(regPC) + " next byte: 0x" + Integer.toHexString(memory[regPC-1].toUByte().toInt()))
-                    regPC += (memory[regPC-0x01].toUByte().toInt())
+                    regPC = intToBinaryAdditionHex(regPC, memory[regPC-0x01].toUByte().toInt())
+                    //regPC += (memory[regPC-0x01].toUByte().toInt())
                     println("regpc is: 0x" + Integer.toHexString(regPC))
                 } else {
                     regPC += 0x02
@@ -512,7 +513,7 @@ class GameBoy {
     fun intToBinaryAdditionHex(num1: Int, num2: Int) : Int {
         var result = num1 + num2
         if(result>255) {
-            result = result - 255
+            result = result - 256
             setFlag('C' , 1)
         } else {
             setFlag('C' , 0)
@@ -533,7 +534,7 @@ class GameBoy {
     fun intToBinarySubtractionHex(num1: Int, num2: Int) : Int {
         var result = num1 - num2
         if(result<0) {
-            result = result + 255
+            result = result + 256
             setFlag('C' , 1)
         } else {
             setFlag('C' , 0)
