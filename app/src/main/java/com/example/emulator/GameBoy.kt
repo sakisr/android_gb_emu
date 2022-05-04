@@ -78,6 +78,8 @@ class GameBoy {
                 regBC[1] = memory[regPC].toUByte().toInt()
                 regPC += 0x02
             }
+            // Store Accumulator Register contents into memory[regBC]
+            0x02 -> memory[(reg]
             // Load next byte to register B
             0x06 -> {
                 regBC[0] = memory[regPC].toInt()
@@ -142,6 +144,10 @@ class GameBoy {
             }
             // Load contents of Register B into Accumulator Register
             0x78 -> regAF[0] = regBC[0]
+            // Load contents of Register H into Accumulator Register
+            0x7c -> regAF[0] = regHL[0]
+            // Load contents of Register L into Accumulator Register
+            0x7d -> regAF[0] = regHL[1]
             // Load immediate byte into Accumulator Register
             0x3e -> {
                 regAF[0] = memory[regPC].toUByte().toInt()
