@@ -36,6 +36,7 @@ class GameBoy {
 
     // Fetch current instruction (opcode) from memory at the address pointed by the program counter, and increase program counter
     fun fetch() {
+        /*
         print("Running opcode: 0x" + Integer.toHexString(memory[regPC].toUByte().toInt()) + " at memory address: 0x" + Integer.toHexString(regPC) +
                 "\n\t | regAF: " + Integer.toHexString(regAF[0]).padStart(2, '0') + Integer.toHexString(regAF[1]).padStart(2, '0') +
                 "\t|\tZ: " + getFlag('Z') +
@@ -47,6 +48,19 @@ class GameBoy {
                 "\t|\tC: " + getFlag('C') +
                 "\n\t | regPC: " + Integer.toHexString(regPC).padStart(4,'0') +
                 "\n")
+
+         */
+        print("\t | regAF: " + Integer.toHexString(regAF[0]).padStart(2, '0') + Integer.toHexString(regAF[1]).padStart(2, '0') +
+                "\t|\tZ: " + getFlag('Z') +
+                "\n\t | regBC: " + Integer.toHexString(regBC[0]).padStart(2, '0') + Integer.toHexString(regBC[1]).padStart(2, '0') +
+                "\t|\tN: " + getFlag('N') +
+                "\n\t | regDE: " + Integer.toHexString(regDE[0]).padStart(2, '0') + Integer.toHexString(regDE[1]).padStart(2, '0') +
+                "\t|\tH: " + getFlag('H') +
+                "\n\t | regHL: " + Integer.toHexString(regHL[0]).padStart(2, '0') + Integer.toHexString(regHL[1]).padStart(2, '0') +
+                "\t|\tC: " + getFlag('C') +
+                "\n\t | regPC: " + Integer.toHexString(regPC).padStart(4,'0') +
+                "\n" +
+                "Running opcode: 0x" + Integer.toHexString(memory[regPC].toUByte().toInt()) + " at memory address: 0x" + Integer.toHexString(regPC) + "\n")
         opcode = (memory[regPC].toInt())
         regPC += 0x01
     }
@@ -89,10 +103,10 @@ class GameBoy {
             0x20 -> {
                 if(getFlag('Z') == 0) {
                     regPC += 0x01
-                    println("regpc is: 0x" + Integer.toHexString(regPC) + " next byte: 0x" + Integer.toHexString(memory[regPC-1].toUByte().toInt()))
-                    regPC = intToBinaryAdditionHex(regPC, memory[regPC-0x01].toUByte().toInt())
+                    //println("regpc is: 0x" + Integer.toHexString(regPC) + " next byte: 0x" + Integer.toHexString(memory[regPC-1].toUByte().toInt()))
+                    regPC = intToBinaryAdditionHexNoFlag(regPC, memory[regPC-0x01].toUByte().toInt())
                     //regPC += (memory[regPC-0x01].toUByte().toInt())
-                    println("regpc is: 0x" + Integer.toHexString(regPC))
+                    //println("regpc is: 0x" + Integer.toHexString(regPC))
                 } else {
                     regPC += 0x02
                 }
@@ -233,7 +247,9 @@ class GameBoy {
             }
             // Load into Accumulator Registor the contents of memory address (0xff00+immediate byte)
             0xf0 -> {
+                print("regAF[0]=" + regAF[0])
                 regAF[0] = memory[0xff00+memory[regPC]].toUByte().toInt()
+                print("regAF[0]=" + regAF[0] + " memory[6c]: " + Integer.toHexString(memory[regPC].toUByte().toInt()) + " 0xff00+" + Integer.toHexString(memory[regPC].toUByte().toInt()) + ": " + Integer.toHexString(memory[0xff00+memory[regPC]].toUByte().toInt()))
                 regPC += 0x01
             }
             // Reset Interrupt Master Enable flag
@@ -510,8 +526,10 @@ class GameBoy {
 
         return resultarray
     }
+    // Performs addition of two numbers and returns result
     fun intToBinaryAdditionHex(num1: Int, num2: Int) : Int {
         var result = num1 + num2
+        print("Num 1 is: " + Integer.toHexString(num1) + " Num2 is: " + Integer.toHexString(num2) + " result: " + Integer.toHexString(result))
         if(result>255) {
             result = result - 256
             setFlag('C' , 1)
@@ -529,16 +547,45 @@ class GameBoy {
         } else {
             setFlag('H', 0)
         }
+        print("Carry: " + getFlag('C') + "HalfCarry: " + getFlag('H'))
+        readLine()
+        return result
+    }
+    // Performs addition of two numbers and returns result without changing flags
+    fun intToBinaryAdditionHexNoFlag(num1: Int, num2: Int) : Int {
+        var result = num1 + num2
+        print("Num 1 is: " + Integer.toHexString(num1) + " Num2 is: " + Integer.toHexString(num2) + " result: " + Integer.toHexString(result))
+        if(result>255) {
+            result = result - 256
+            setFlag('C' , 1)
+        } else {
+            setFlag('C' , 0)
+        }
+        if (result == 0) {
+            setFlag('Z', 1)
+        } else {
+            setFlag('Z', 0)
+        }
+        setFlag('N', 0)
+        if ((num1.and(0xf)+(num2.and(0xf))) > 0xf) {
+            setFlag('H', 1)
+        } else {
+            setFlag('H', 0)
+        }
+        print("Carry: " + getFlag('C') + "HalfCarry: " + getFlag('H'))
+        readLine()
         return result
     }
     fun intToBinarySubtractionHex(num1: Int, num2: Int) : Int {
         var result = num1 - num2
+        print("Num 1 is: " + Integer.toHexString(num1) + " Num2 is: " + Integer.toHexString(num2))
         if(result<0) {
             result = result + 256
             setFlag('C' , 1)
         } else {
             setFlag('C' , 0)
         }
+        print("result: " + Integer.toHexString(result))
         if (result == 0) {
             setFlag('Z', 1)
         } else {
@@ -550,6 +597,8 @@ class GameBoy {
         } else {
             setFlag('H', 0)
         }
+        print("Carry: " + getFlag('C') + "HalfCarry: " + getFlag('H'))
+        readLine()
         return result
     }
     // Converts two integers to binary and subtracts them
@@ -1073,7 +1122,10 @@ class GameBoy {
         } catch (e: ArrayIndexOutOfBoundsException) {
             print("Reached the end of file\n")
         }
-    }
+    }/*
+    fun printOutputToFile() {
+
+    }*/
     // Print status of registers for debugging
     fun printRegisterStatus() {
         print("-------------------------------------\n")
