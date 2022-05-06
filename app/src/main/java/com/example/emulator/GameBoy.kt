@@ -60,7 +60,7 @@ class GameBoy {
                 "\t|\tC: " + getFlag('C') +
                 "\n\t | regPC: " + Integer.toHexString(regPC).padStart(4,'0') +
                 "\n" +
-                "Running opcode: 0x" + Integer.toHexString(memory[regPC].toUByte().toInt()) + " at memory address: 0x" + Integer.toHexString(regPC) + "\n")
+                "Running opcode: 0x" + Integer.toHexString(memory[regPC].toUByte().toInt()).padStart(2,'0') + " at memory address: 0x" + Integer.toHexString(regPC) + "\n")
         opcode = (memory[regPC].toInt())
         regPC += 0x01
     }
@@ -79,7 +79,11 @@ class GameBoy {
                 regPC += 0x02
             }
             // Store Accumulator Register contents into memory[regBC]
-            0x02 -> memory[(reg]
+            0x02 -> {
+                memory[bytesToWord(regBC[0],regBC[1])] = regAF[0].toUByte().toByte()
+                //print("regB: " + Integer.toHexString(regBC[0]) + " regC: " + Integer.toHexString(regBC[1]) + " regBC: " + Integer.toHexString(bytesToWord(regBC[0],regBC[1])))
+                //print("regA: " + regAF[0] + " memory[" + Integer.toHexString(bytesToWord(regBC[0],regBC[1])) + "]: " + memory[bytesToWord(regBC[0],regBC[1])])
+            }
             // Load next byte to register B
             0x06 -> {
                 regBC[0] = memory[regPC].toInt()
@@ -221,6 +225,7 @@ class GameBoy {
                 memory[regSP] = splitToBytes(regPC, 2)
                 regPC = getNextTwoBytes(regPC-0x02)
             }
+            // TODO: Check if stack pointer is correct
             // Push registers DE into stack
             0xd5 -> {
                 regSP -= 0x01
@@ -229,9 +234,21 @@ class GameBoy {
                 memory[regSP] = regDE[1].toUByte().toByte()
             }
             // Store Accumulator Register value in memory address (0xff00+immediate byte)
-            0xe0 ->{
+            0xe0 -> {
                 memory[0xff00+memory[regPC]] = regAF[0].toByte()
                 regPC += 0x01
+            }
+            // Pop stack into registers HL
+            0xe1 -> {
+                regHL[0] = memory[regSP+0x01].toUByte().toInt()
+                regHL[1] = memory[regSP].toUByte().toInt()
+                regSP += 0x02
+            }
+            // Push registers HL into stack
+            0xe5 -> {
+                memory[regSP-0x01] = regHL[0].toUByte().toByte()
+                memory[regSP-0x02] = regHL[1].toUByte().toByte()
+                regSP -= 0x02
             }
             // Store into Accumulator Register the results of (Accumulator Register AND immediate byte)
             0xe6 -> {
@@ -250,6 +267,13 @@ class GameBoy {
             0xea -> {
                 memory[getNextTwoBytes(regPC)] = regAF[0].toByte()
                 regPC += 0x02
+            }
+            // Push contents of regHL into stack
+            0xe5 -> {
+                memory[regSP-0x01] = regHL[0].toUByte().toByte()
+                memory[regSP-0x02] = regHL[1].toUByte().toByte()
+                //print("memory: " + memory[regSP-1] + " " + memory[regSP-2] + " regHL: " + regHL[0] + " " + regHL[1])
+                regSP -= 0x02
             }
             // Load into Accumulator Registor the contents of memory address (0xff00+immediate byte)
             0xf0 -> {
