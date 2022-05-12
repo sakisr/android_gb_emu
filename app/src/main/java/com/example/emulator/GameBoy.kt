@@ -205,77 +205,137 @@ class GameBoy {
             }
             //0x3f ->
 
-            //0x40 ->
-            //0x41 ->
-            //0x42 ->
-            //0x43 ->
-            //0x44 ->
-            //0x45 ->
-            //0x46 ->
-            // Load contents of Accumulator Register into Register B
+            // Load register B into register B
+            0x40 -> regBC[0] = regBC[0]
+            // Load register C into register B
+            0x41 -> regBC[0] = regBC[1]
+            // Load register D into register B
+            0x42 -> regBC[0] = regDE[0]
+            // Load register E into register B
+            0x43 -> regBC[0] = regDE[1]
+            // Load register H into register B
+            0x44 -> regBC[0] = regHL[0]
+            // Load register L into register B
+            0x45 -> regBC[0] = regHL[1]
+            // Load memory[regHL] into register B
+            0x46 -> regBC[0] = memory[bytesToWord(regHL[0],regHL[1])]
+            // Load Accumulator Register into Register B
             0x47 -> regBC[0] = regAF[0]
-            //0x48 ->
-            //0x49 ->
-            //0x4a ->
-            //0x4b ->
-            //0x4c ->
-            //0x4d ->
-            //0x4e ->
-            //0x4f ->
+            // Load register B into register C
+            0x48 -> regBC[1] = regBC[0]
+            // Load register C into register C
+            0x49 -> regBC[1] = regBC[1]
+            // Load register D into register C
+            0x4a -> regBC[1] = regDE[0]
+            // Load register E into register C
+            0x4b -> regBC[1] = regDE[1]
+            // Load register H into register C
+            0x4c -> regBC[1] = regHL[0]
+            // Load register L into register C
+            0x4d -> regBC[1] = regHL[1]
+            // Load memory[regHL] into register C
+            0x4e -> regBC[1] = memory[bytesToWord(regHL[0],regHL[1])]
+            // Load Accumulator Register into Register C
+            0x4f -> regBC[1] = regAF[0]
 
-            //0x50 ->
-            //0x51 ->
-            //0x52 ->
-            //0x53 ->
-            //0x54 ->
-            //0x55 ->
-            //0x56 ->
-            //0x57 ->
-            //0x58 ->
-            //0x59 ->
-            //0x5a ->
-            //0x5b ->
-            //0x5c ->
-            //0x5d ->
-            //0x5e ->
-            //0x5f ->
+            // Load register B into register D
+            0x50 -> regDE[0] = regBC[0]
+            // Load register C into register D
+            0x51 -> regDE[0] = regBC[1]
+            // Load register D into register D
+            0x52 -> regDE[0] = regDE[0]
+            // Load register E into register D
+            0x53 -> regDE[0] = regDE[1]
+            // Load register H into register D
+            0x54 -> regDE[0] = regHL[0]
+            // Load register L into register D
+            0x55 -> regDE[0] = regHL[1]
+            // Load memory[regHL] into register D
+            0x56 -> regDE[0] = memory[bytesToWord(regHL[0],regHL[1])]
+            // Load Accumulator Register into Register D
+            0x57 -> regDE[0] = regAF[0]
+            // Load register B into register E
+            0x58 -> regDE[1] = regBC[0]
+            // Load register C into register E
+            0x59 -> regDE[1] = regBC[1]
+            // Load register D into register E
+            0x5a -> regDE[1] = regDE[0]
+            // Load register E into register E
+            0x5b -> regDE[1] = regDE[1]
+            // Load register H into register E
+            0x5c -> regDE[1] = regHL[0]
+            // Load register L into register E
+            0x5d -> regDE[1] = regHL[1]
+            // Load memory[regHL] into register E
+            0x5e -> regDE[1] = memory[bytesToWord(regHL[0],regHL[1])]
+            // Load Accumulator Register into Register E
+            0x5f -> regDE[1] = regAF[0]
 
-            //0x60 ->
-            //0x61 ->
-            //0x62 ->
-            //0x63 ->
-            //0x64 ->
-            //0x65 ->
-            //0x66 ->
-            //0x67 ->
-            //0x68 ->
-            //0x69 ->
-            //0x6a ->
-            //0x6b ->
-            //0x6c ->
-            //0x6d ->
-            //0x6e ->
-            //0x6f ->
+            // Load register B into register H
+            0x60 -> regHL[0] = regBC[0]
+            // Load register C into register H
+            0x61 -> regHL[0] = regBC[1]
+            // Load register D into register H
+            0x62 -> regHL[0] = regDE[0]
+            // Load register E into register H
+            0x63 -> regHL[0] = regDE[1]
+            // Load register H into register H
+            0x64 -> regHL[0] = regHL[0]
+            // Load register L into register H
+            0x65 -> regHL[0] = regHL[1]
+            // Load memory[regHL] into register H
+            0x66 -> regHL[0] = memory[bytesToWord(regHL[0],regHL[1])]
+            // Load Accumulator Register into Register H
+            0x67 -> regHL[0] = regAF[0]
+            // Load register B into register L
+            0x68 -> regHL[1] = regBC[0]
+            // Load register C into register L
+            0x69 -> regHL[1] = regBC[1]
+            // Load register D into register L
+            0x6a -> regHL[1] = regDE[0]
+            // Load register E into register L
+            0x6b -> regHL[1] = regDE[1]
+            // Load register H into register L
+            0x6c -> regHL[1] = regHL[0]
+            // Load register L into register L
+            0x6d -> regHL[1] = regHL[1]
+            // Load memory[regHL] into register L
+            0x6e -> regHL[1] = memory[bytesToWord(regHL[0],regHL[1])]
+            // Load Accumulator Register into Register L
+            0x6f -> regHL[1] = regAF[0]
 
-            //0x70 ->
-            //0x71 ->
-            //0x72 ->
-            //0x73 ->
-            //0x74 ->
-            //0x75 ->
+            // Load register B into memory[regHL]
+            0x70 -> memory[bytesToWord(regHL[0],regHL[1])] = regBC[0]
+            // Load register C into memory[regHL]
+            0x71 -> memory[bytesToWord(regHL[0],regHL[1])] = regBC[1]
+            // Load register D into memory[regHL]
+            0x72 -> memory[bytesToWord(regHL[0],regHL[1])] = regDE[0]
+            // Load register E into memory[regHL]
+            0x73 -> memory[bytesToWord(regHL[0],regHL[1])] = regDE[1]
+            // Load register H into memory[regHL]
+            0x74 -> memory[bytesToWord(regHL[0],regHL[1])] = regHL[0]
+            // Load register L into memory[regHL]
+            0x75 -> memory[bytesToWord(regHL[0],regHL[1])] = regHL[1]
+            // HALT
             //0x76 ->
-            //0x77 ->
-            // Load contents of Register B into Accumulator Register
+            // Load Accumulator Register into memory[regHL]
+            0x77 -> memory[bytesToWord(regHL[0],regHL[1])] = regAF[0]
+            // Load Register B into Accumulator Register
             0x78 -> regAF[0] = regBC[0]
-            //0x79 ->
-            //0x7a ->
-            //0x7b ->
-            // Load contents of Register H into Accumulator Register
+            // Load Register C into Accumulator Register
+            0x79 -> regAF[0] = regBC[1]
+            // Load Register D into Accumulator Register
+            0x7a -> regAF[0] = regDE[0]
+            // Load Register E into Accumulator Register
+            0x7b -> regAF[0] = regDE[1]
+            // Load Register H into Accumulator Register
             0x7c -> regAF[0] = regHL[0]
-            // Load contents of Register L into Accumulator Register
+            // Load Register L into Accumulator Register
             0x7d -> regAF[0] = regHL[1]
-            //0x7e ->
-            //0x7f ->
+            // Load memory[regHL] into Accumulator Register
+            0x7e -> regAF[0] = memory[bytesToWord(regHL[0],regHL[1])]
+            // Load Accumulator Register into Accumulator Register
+            0x7f -> regAF[0] = regAF[0]
 
             //0x80 ->
             //0x81 ->
