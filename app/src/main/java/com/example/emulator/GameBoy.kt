@@ -218,7 +218,7 @@ class GameBoy {
             // Load register L into register B
             0x45 -> regBC[0] = regHL[1]
             // Load memory[regHL] into register B
-            0x46 -> regBC[0] = memory[bytesToWord(regHL[0],regHL[1])]
+            0x46 -> regBC[0] = memory[bytesToWord(regHL[0],regHL[1])].toUByte().toInt()
             // Load Accumulator Register into Register B
             0x47 -> regBC[0] = regAF[0]
             // Load register B into register C
@@ -234,7 +234,7 @@ class GameBoy {
             // Load register L into register C
             0x4d -> regBC[1] = regHL[1]
             // Load memory[regHL] into register C
-            0x4e -> regBC[1] = memory[bytesToWord(regHL[0],regHL[1])]
+            0x4e -> regBC[1] = memory[bytesToWord(regHL[0],regHL[1])].toUByte().toInt()
             // Load Accumulator Register into Register C
             0x4f -> regBC[1] = regAF[0]
 
@@ -251,7 +251,7 @@ class GameBoy {
             // Load register L into register D
             0x55 -> regDE[0] = regHL[1]
             // Load memory[regHL] into register D
-            0x56 -> regDE[0] = memory[bytesToWord(regHL[0],regHL[1])]
+            0x56 -> regDE[0] = memory[bytesToWord(regHL[0],regHL[1])].toUByte().toInt()
             // Load Accumulator Register into Register D
             0x57 -> regDE[0] = regAF[0]
             // Load register B into register E
@@ -267,7 +267,7 @@ class GameBoy {
             // Load register L into register E
             0x5d -> regDE[1] = regHL[1]
             // Load memory[regHL] into register E
-            0x5e -> regDE[1] = memory[bytesToWord(regHL[0],regHL[1])]
+            0x5e -> regDE[1] = memory[bytesToWord(regHL[0],regHL[1])].toUByte().toInt()
             // Load Accumulator Register into Register E
             0x5f -> regDE[1] = regAF[0]
 
@@ -284,7 +284,7 @@ class GameBoy {
             // Load register L into register H
             0x65 -> regHL[0] = regHL[1]
             // Load memory[regHL] into register H
-            0x66 -> regHL[0] = memory[bytesToWord(regHL[0],regHL[1])]
+            0x66 -> regHL[0] = memory[bytesToWord(regHL[0],regHL[1])].toUByte().toInt()
             // Load Accumulator Register into Register H
             0x67 -> regHL[0] = regAF[0]
             // Load register B into register L
@@ -300,26 +300,26 @@ class GameBoy {
             // Load register L into register L
             0x6d -> regHL[1] = regHL[1]
             // Load memory[regHL] into register L
-            0x6e -> regHL[1] = memory[bytesToWord(regHL[0],regHL[1])]
+            0x6e -> regHL[1] = memory[bytesToWord(regHL[0],regHL[1])].toUByte().toInt()
             // Load Accumulator Register into Register L
             0x6f -> regHL[1] = regAF[0]
 
             // Load register B into memory[regHL]
-            0x70 -> memory[bytesToWord(regHL[0],regHL[1])] = regBC[0]
+            0x70 -> memory[bytesToWord(regHL[0],regHL[1])] = regBC[0].toUByte().toByte()
             // Load register C into memory[regHL]
-            0x71 -> memory[bytesToWord(regHL[0],regHL[1])] = regBC[1]
+            0x71 -> memory[bytesToWord(regHL[0],regHL[1])] = regBC[1].toUByte().toByte()
             // Load register D into memory[regHL]
-            0x72 -> memory[bytesToWord(regHL[0],regHL[1])] = regDE[0]
+            0x72 -> memory[bytesToWord(regHL[0],regHL[1])] = regDE[0].toUByte().toByte()
             // Load register E into memory[regHL]
-            0x73 -> memory[bytesToWord(regHL[0],regHL[1])] = regDE[1]
+            0x73 -> memory[bytesToWord(regHL[0],regHL[1])] = regDE[1].toUByte().toByte()
             // Load register H into memory[regHL]
-            0x74 -> memory[bytesToWord(regHL[0],regHL[1])] = regHL[0]
+            0x74 -> memory[bytesToWord(regHL[0],regHL[1])] = regHL[0].toUByte().toByte()
             // Load register L into memory[regHL]
-            0x75 -> memory[bytesToWord(regHL[0],regHL[1])] = regHL[1]
+            0x75 -> memory[bytesToWord(regHL[0],regHL[1])] = regHL[1].toUByte().toByte()
             // HALT
             //0x76 ->
             // Load Accumulator Register into memory[regHL]
-            0x77 -> memory[bytesToWord(regHL[0],regHL[1])] = regAF[0]
+            0x77 -> memory[bytesToWord(regHL[0],regHL[1])] = regAF[0].toUByte().toByte()
             // Load Register B into Accumulator Register
             0x78 -> regAF[0] = regBC[0]
             // Load Register C into Accumulator Register
@@ -333,7 +333,7 @@ class GameBoy {
             // Load Register L into Accumulator Register
             0x7d -> regAF[0] = regHL[1]
             // Load memory[regHL] into Accumulator Register
-            0x7e -> regAF[0] = memory[bytesToWord(regHL[0],regHL[1])]
+            0x7e -> regAF[0] = memory[bytesToWord(regHL[0],regHL[1])].toUByte().toInt()
             // Load Accumulator Register into Accumulator Register
             0x7f -> regAF[0] = regAF[0]
 
