@@ -85,9 +85,12 @@ class GameBoy {
                 //print("regB: " + Integer.toHexString(regBC[0]) + " regC: " + Integer.toHexString(regBC[1]) + " regBC: " + Integer.toHexString(bytesToWord(regBC[0],regBC[1])))
                 //print("regA: " + regAF[0] + " memory[" + Integer.toHexString(bytesToWord(regBC[0],regBC[1])) + "]: " + memory[bytesToWord(regBC[0],regBC[1])])
             }
-            //0x03 ->
-            //0x04 ->
-            //0x05 ->
+            // Increase regBC by 1
+            0x03 -> addToRegisters("BC", 1)
+            // Increase register B by 1
+            0x04 -> regBC[0] += 1
+            // Decrease register B by 1
+            0x05 -> regBC[0] -= 1
             // Load next byte to register B
             0x06 -> {
                 regBC[0] = memory[regPC].toInt()
@@ -97,16 +100,32 @@ class GameBoy {
             //0x07 -> {
             //    rotateBits('A', "left")
             //}
-            //0x08 ->
+            // TODO: Test
+            // Store first and second bytes of regSP into memory addresses shown by immediate operand
+            0x08 -> {
+                val address = getNextTwoBytes(regPC)
+                memory[address] = splitToBytes(regSP, 2)
+                memory[address+1] = splitToBytes(regSP, 1)
+                regPC += 0x02
+            }
             //0x09 ->
-            //0x0a ->
+            // Load memory[regBC] into Accumulator register
+            0x0a -> {
+                regAF[0] = memory[bytesToWord(regBC[0], regBC[1])].toUByte().toInt()
+            }
             // Decrease registers BC by 1
             0x0b -> {
                 addToRegisters("BC", -1)
             }
-            //0x0c ->
-            //0x0d ->
-            //0x0e ->
+            // Increase register C by 1
+            0x0c -> regBC[1] += 1
+            // Decrease register C by 1
+            0x0d -> regBC[1] -= 1
+            // Load immediate operand into register C
+            0x0e -> {
+                regBC[1] = memory[regPC].toUByte().toInt()
+                regPC += 0x01
+            }
             //0x0f ->
 
             //0x10 ->
