@@ -88,9 +88,10 @@ class GameBoy {
             // Increase regBC by 1
             0x03 -> addToRegisters("BC", 1)
             // Increase register B by 1
-            0x04 -> regBC[0] += 1
+            0x04 -> regBC[0] = intToBinaryAdditionHex(regBC[0] , 1)
+            // TODO: Test
             // Decrease register B by 1
-            0x05 -> regBC[0] -= 1
+            0x05 -> regBC[0] = intToBinarySubtractionHex(regBC[0], 1)
             // Load next byte to register B
             0x06 -> {
                 regBC[0] = memory[regPC].toInt()
@@ -118,9 +119,10 @@ class GameBoy {
                 addToRegisters("BC", -1)
             }
             // Increase register C by 1
-            0x0c -> regBC[1] += 1
+            0x0c -> regBC[1] = intToBinaryAdditionHex(regBC[1] , 1)
+            // TODO: Test
             // Decrease register C by 1
-            0x0d -> regBC[1] -= 1
+            0x0d -> regBC[1] = intToBinarySubtractionHex(regBC[1], 1)
             // Load immediate operand into register C
             0x0e -> {
                 regBC[1] = memory[regPC].toUByte().toInt()
@@ -145,9 +147,10 @@ class GameBoy {
             // Increase regDE by 1
             0x13 -> addToRegisters("DE", 1)
             // Increase register D by 1
-            0x14 -> regDE[0] += 1
+            0x14 -> regDE[0] = intToBinaryAdditionHex(regDE[0] , 1)
+            // TODO: Test
             // Decrease register D by 1
-            0x15 -> regDE[0] -= 1
+            0x15 -> regDE[0] = intToBinarySubtractionHex(regDE[0], 1)
             // Load next byte to register D
             0x16 -> {
                 regDE[0] = memory[regPC].toInt()
@@ -173,9 +176,10 @@ class GameBoy {
                 addToRegisters("DE", -1)
             }
             // Increase register E by 1
-            0x1c -> regDE[1] += 1
+            0x1c -> regDE[1] = intToBinaryAdditionHex(regDE[1] , 1)
+            // TODO: Test
             // Decrease register E by 1
-            0x1d -> regDE[1] -= 1
+            0x1d -> regDE[0] = intToBinarySubtractionHex(regDE[1], 1)
             // Load immediate operand into register E
             0x1e -> {
                 regDE[1] = memory[regPC].toUByte().toInt()
@@ -187,14 +191,19 @@ class GameBoy {
             // Check flag Z, if it equals 0 then add immediate byte to Program Counter, else do nothing
             0x20 -> {
                 if(getFlag('Z') == 0) {
+                    regPC += memory[regPC].toInt()
+                } else {
                     regPC += 0x01
+                }
+                /*if(getFlag('Z') == 0) {
+                    //regPC += 0x01
                     //println("regpc is: 0x" + Integer.toHexString(regPC) + " next byte: 0x" + Integer.toHexString(memory[regPC-1].toUByte().toInt()))
                     regPC = intToBinaryAdditionHexNoFlag(regPC, memory[regPC-0x01].toUByte().toInt())
                     //regPC += (memory[regPC-0x01].toUByte().toInt())
                     //println("regpc is: 0x" + Integer.toHexString(regPC))
                 } else {
-                    regPC += 0x02
-                }
+                    regPC += 0x01
+                }*/
             }
             // Load next two bytes into registers HL
             0x21 -> {
@@ -218,9 +227,10 @@ class GameBoy {
             // Increase regHL by 1
             0x23 -> addToRegisters("HL", 1)
             // Increase register H by 1
-            0x24 -> regHL[0] += 1
+            0x24 -> regHL[0] = intToBinaryAdditionHex(regHL[0] , 1)
+            // TODO: Test
             // Decrease register H by 1
-            0x25 -> regHL[0] -= 1
+            0x25 -> regHL[0] = intToBinarySubtractionHex(regHL[0], 1)
             // Load next byte to register H
             0x26 -> {
                 regHL[0] = memory[regPC].toInt()
@@ -258,9 +268,10 @@ class GameBoy {
                 addToRegisters("HL", -1)
             }
             // Increase register L by 1
-            0x2c -> regHL[1] += 1
+            0x2c -> regHL[1] = intToBinaryAdditionHex(regHL[1] , 1)
+            // TODO: Test
             // Decrease register L by 1
-            0x2d -> regHL[1] -= 1
+            0x2d -> regHL[1] = intToBinarySubtractionHex(regHL[1], 1)
             // Load immediate operand into register E
             0x2e -> {
                 regHL[1] = memory[regPC].toUByte().toInt()
@@ -268,6 +279,88 @@ class GameBoy {
             }
             // 1's complement of register A
             //0x2f ->
+
+            // Check flag C, if it equals 0 then add immediate byte to Program Counter, else do nothing
+            0x30 -> {
+                if(getFlag('C') == 0) {
+                    regPC += memory[regPC].toInt()
+                } else {
+                    regPC += 0x01
+                }
+            }
+            // Load next two bytes into Stack Pointer register
+            0x31 -> {
+                regSP = bytesToWord(memory[regPC+1], memory[regPC])
+                regPC += 0x02
+            }
+            // Store Accumulator Register contents into memory[regHL] and add -1 to registers HL
+            0x32 -> {
+                memory[bytesToWord(regHL[0],regHL[1])] = regAF[0].toUByte().toByte()
+                addToRegisters("HL", -1)
+                //print("regB: " + Integer.toHexString(regBC[0]) + " regC: " + Integer.toHexString(regBC[1]) + " regBC: " + Integer.toHexString(bytesToWord(regBC[0],regBC[1])))
+                //print("regA: " + regAF[0] + " memory[" + Integer.toHexString(bytesToWord(regBC[0],regBC[1])) + "]: " + memory[bytesToWord(regBC[0],regBC[1])])
+            }
+            // Increase Stack Pointer by 1
+            0x33 -> addToRegisters("SP", 1)
+            // TODO: Test
+            // Increase memory[regHL] by 1
+            0x34 -> {
+                val word = bytesToWord(regHL[0],regHL[1])
+                memory[word] = intToBinaryAdditionHex(memory[word], 1).toUByte().toByte()
+            }
+            // TODO: Test
+            // Decrease memory[regHL] by 1
+            0x35 -> {
+                val word = bytesToWord(regHL[0],regHL[1])
+                memory[word] = intToBinarySubtractionHex(memory[word], 1).toUByte().toByte()
+            }
+            // Load next byte to memory[regHL]
+            0x36 -> {
+                memory[regHL] = memory[regPC]
+                regPC += 0x01
+            }
+            // Set flag C
+            0x37 -> setFlag('C', 1)
+            // TODO: Test
+            // If flag C equals 1, jump steps specified by the next byte, if flag C equals 0, proceed to next instruction normally
+            0x38 -> {
+                if(getFlag('C') == 1) {
+                    regPC += memory[regPC].toInt()
+                } else {
+                    regPC += 0x01
+                }
+            }
+            // Add contents of Stack Pointer register to registers HL
+            //0x39 ->
+            // Load memory[regHL] into Accumulator register and add -1 to registers HL
+            0x3a -> {
+                regAF[0] = memory[bytesToWord(regHL[0], regHL[1])].toUByte().toInt()
+                addToRegisters("HL", -1)
+            }
+            // Decrease Stack Pointer register by 1
+            0x3b -> {
+                addToRegisters("SP", -1)
+            }
+            // TODO: Test
+            // Increase Accumulator register by 1
+            0x3c -> regAF[0] = intToBinaryAdditionHex(regAF[0] , 1)
+            // TODO: Test
+            // Decrease Accumulator register by 1
+            0x3d -> regAF[0] = intToBinarySubtractionHex(regAF[0], 1)
+            // Load immediate operand into Accumulator register
+            0x3e -> {
+                regAF[0] = memory[regPC].toUByte().toInt()
+                regPC += 0x01
+            }
+            // Flip flag C
+            0x3f -> {
+                if(getFlag('C') == 0) {
+                    setFlag('C', 1)
+                } else {
+                    setFlag('C', 0)
+                }
+            }
+
 
             //0x30 ->
             // Load next two bytes into Stack Pointer
@@ -1379,6 +1472,10 @@ class GameBoy {
             "HL", "hl" -> {
                 regHL[0] = splitToBytes(bytesToWord(regHL[0], regHL[1]) + value, 1).toUByte().toInt()
                 regHL[1] = splitToBytes(bytesToWord(regHL[0], regHL[1]) + value, 2).toUByte().toInt()
+                return
+            }
+            "SP", "sp" -> {
+                regSP = regSP + value
                 return
             }
         }
