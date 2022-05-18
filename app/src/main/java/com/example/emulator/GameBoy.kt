@@ -128,6 +128,7 @@ class GameBoy {
             }
             //0x0f ->
 
+            // STOP
             //0x10 ->
             // Load next two bytes into registers DE
             0x11 -> {
@@ -135,20 +136,52 @@ class GameBoy {
                 regDE[1] = memory[regPC].toUByte().toInt()
                 regPC += 0x02
             }
-            //0x12 ->
-            //0x13 ->
-            //0x14 ->
-            //0x15 ->
-            //0x16 ->
-            //0x17 ->
-            // Increase Program Counter by immediate byte value
-            0x18 -> regPC += memory[regPC].toInt()
+            // Store Accumulator Register contents into memory[regDE]
+            0x12 -> {
+                memory[bytesToWord(regDE[0],regDE[1])] = regAF[0].toUByte().toByte()
+                //print("regB: " + Integer.toHexString(regBC[0]) + " regC: " + Integer.toHexString(regBC[1]) + " regBC: " + Integer.toHexString(bytesToWord(regBC[0],regBC[1])))
+                //print("regA: " + regAF[0] + " memory[" + Integer.toHexString(bytesToWord(regBC[0],regBC[1])) + "]: " + memory[bytesToWord(regBC[0],regBC[1])])
+            }
+            // Increase regDE by 1
+            0x13 -> addToRegisters("DE", 1)
+            // Increase register D by 1
+            0x14 -> regDE[0] += 1
+            // Decrease register D by 1
+            0x15 -> regDE[0] -= 1
+            // Load next byte to register D
+            0x16 -> {
+                regDE[0] = memory[regPC].toInt()
+                regPC += 0x01
+            }
+            // Rotate contents of register A to the left
+            //0x17 -> {
+            //    rotateBits('A', "left")
+            //}
+            // TODO: Test
+            // Relative jump in Program Counter specified by next byte
+            0x18 -> {
+                regPC += memory[regPC].toInt()
+            }
+            // Add contents of registers DE to registers HL
             //0x19 ->
-            //0x1a ->
-            //0x1b ->
-            //0x1c ->
-            //0x1d ->
-            //0x1e ->
+            // Load memory[regDE] into Accumulator register
+            0x1a -> {
+                regAF[0] = memory[bytesToWord(regDE[0], regDE[1])].toUByte().toInt()
+            }
+            // Decrease registers DE by 1
+            0x1b -> {
+                addToRegisters("DE", -1)
+            }
+            // Increase register E by 1
+            0x1c -> regDE[1] += 1
+            // Decrease register E by 1
+            0x1d -> regDE[1] -= 1
+            // Load immediate operand into register E
+            0x1e -> {
+                regDE[1] = memory[regPC].toUByte().toInt()
+                regPC += 0x01
+            }
+            // Rotate Accumulator Register to the right
             //0x1f ->
 
             // Check flag Z, if it equals 0 then add immediate byte to Program Counter, else do nothing
@@ -165,34 +198,75 @@ class GameBoy {
             }
             // Load next two bytes into registers HL
             0x21 -> {
-                regHL[0] = splitToBytes(getNextTwoBytes(regPC), 1).toUByte().toInt()
-                regHL[1] = splitToBytes(getNextTwoBytes(regPC), 2).toUByte().toInt()
+                regDE[0] = memory[regPC+1].toUByte().toInt()
+                regDE[1] = memory[regPC].toUByte().toInt()
                 regPC += 0x02
             }
-            //0x22 ->
-            // Increase registers HL by 1
-            0x23 -> {
+            // Load next two bytes into registers HL
+            //0x21 -> {
+            //    regHL[0] = splitToBytes(getNextTwoBytes(regPC), 1).toUByte().toInt()
+            //    regHL[1] = splitToBytes(getNextTwoBytes(regPC), 2).toUByte().toInt()
+            //    regPC += 0x02
+            //}
+            // Store Accumulator Register contents into memory[regHL] and add 1 to registers HL
+            0x22 -> {
+                memory[bytesToWord(regHL[0],regHL[1])] = regAF[0].toUByte().toByte()
                 addToRegisters("HL", 1)
+                //print("regB: " + Integer.toHexString(regBC[0]) + " regC: " + Integer.toHexString(regBC[1]) + " regBC: " + Integer.toHexString(bytesToWord(regBC[0],regBC[1])))
+                //print("regA: " + regAF[0] + " memory[" + Integer.toHexString(bytesToWord(regBC[0],regBC[1])) + "]: " + memory[bytesToWord(regBC[0],regBC[1])])
             }
-            //0x24 ->
-            //0x25 ->
-            //0x26 ->
+            // Increase regHL by 1
+            0x23 -> addToRegisters("HL", 1)
+            // Increase register H by 1
+            0x24 -> regHL[0] += 1
+            // Decrease register H by 1
+            0x25 -> regHL[0] -= 1
+            // Load next byte to register H
+            0x26 -> {
+                regHL[0] = memory[regPC].toInt()
+                regPC += 0x01
+            }
+            // DAA
             //0x27 ->
-            // Check flag Z, if it equals 1 then add immediate byte to Program Counter, else do nothing
+            // TODO: Test
+            // If flag Z equals 1, jump steps specified by the next byte, if flag Z equals 0, proceed to next instruction normally
             0x28 -> {
                 if(getFlag('Z') == 1) {
-                    regPC += 0x01
-                    regPC += (memory[regPC-0x01].toUByte().toInt())
+                    regPC += memory[regPC].toInt()
                 } else {
                     regPC += 0x01
                 }
             }
+            // Check flag Z, if it equals 1 then add immediate byte to Program Counter, else do nothing
+            //0x28 -> {
+            //    if(getFlag('Z') == 1) {
+            //        regPC += 0x01
+            //        regPC += (memory[regPC-0x01].toUByte().toInt())
+            //    } else {
+            //        regPC += 0x01
+            //    }
+            //}
+            // Add contents of registers HL to registers HL
             //0x29 ->
-            //0x2a ->
-            //0x2b ->
-            //0x2c ->
-            //0x2d ->
-            //0x2e ->
+            // Load memory[regHL] into Accumulator register and add 1 to registers HL
+            0x2a -> {
+                regAF[0] = memory[bytesToWord(regHL[0], regHL[1])].toUByte().toInt()
+                addToRegisters("HL", 1)
+            }
+            // Decrease registers HL by 1
+            0x2b -> {
+                addToRegisters("HL", -1)
+            }
+            // Increase register L by 1
+            0x2c -> regHL[1] += 1
+            // Decrease register L by 1
+            0x2d -> regHL[1] -= 1
+            // Load immediate operand into register E
+            0x2e -> {
+                regHL[1] = memory[regPC].toUByte().toInt()
+                regPC += 0x01
+            }
+            // 1's complement of register A
             //0x2f ->
 
             //0x30 ->
