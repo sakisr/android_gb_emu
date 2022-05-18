@@ -290,7 +290,7 @@ class GameBoy {
             }
             // Load next two bytes into Stack Pointer register
             0x31 -> {
-                regSP = bytesToWord(memory[regPC+1], memory[regPC])
+                regSP = bytesToWord(memory[regPC+1].toInt(), memory[regPC].toInt())
                 regPC += 0x02
             }
             // Store Accumulator Register contents into memory[regHL] and add -1 to registers HL
@@ -306,17 +306,17 @@ class GameBoy {
             // Increase memory[regHL] by 1
             0x34 -> {
                 val word = bytesToWord(regHL[0],regHL[1])
-                memory[word] = intToBinaryAdditionHex(memory[word], 1).toUByte().toByte()
+                memory[word] = intToBinaryAdditionHex(memory[word].toInt(), 1).toUByte().toByte()
             }
             // TODO: Test
             // Decrease memory[regHL] by 1
             0x35 -> {
                 val word = bytesToWord(regHL[0],regHL[1])
-                memory[word] = intToBinarySubtractionHex(memory[word], 1).toUByte().toByte()
+                memory[word] = intToBinarySubtractionHex(memory[word].toInt(), 1).toUByte().toByte()
             }
             // Load next byte to memory[regHL]
             0x36 -> {
-                memory[regHL] = memory[regPC]
+                memory[bytesToWord(regHL[0], regHL[1])] = memory[regPC]
                 regPC += 0x01
             }
             // Set flag C
@@ -360,36 +360,6 @@ class GameBoy {
                     setFlag('C', 0)
                 }
             }
-
-
-            //0x30 ->
-            // Load next two bytes into Stack Pointer
-            0x31 -> {
-                regSP = getNextTwoBytes(regPC)
-                regPC += 0x02
-            }
-            //0x32 ->
-            //0x33 ->
-            //0x34 ->
-            //0x35 ->
-            // Load immediate byte into memory address stored in registers HL
-            0x36 -> {
-                memory[bytesToWord(regHL[0], regHL[1])] = memory[regPC]
-                regPC += 0x01
-            }
-            //0x37 ->
-            //0x38 ->
-            //0x39 ->
-            //0x3a ->
-            //0x3b ->
-            //0x3c ->
-            //0x3d ->
-            // Load immediate byte into Accumulator Register
-            0x3e -> {
-                regAF[0] = memory[regPC].toUByte().toInt()
-                regPC += 0x01
-            }
-            //0x3f ->
 
             // Load register B into register B
             0x40 -> regBC[0] = regBC[0]
