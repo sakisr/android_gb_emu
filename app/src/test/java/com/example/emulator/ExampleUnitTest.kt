@@ -21,11 +21,10 @@ class GameboyBinaryCalculationTest() {
         val result2add : IntArray = intArrayOf(1,1,1,0,0,0,0,1)
         val result3add : IntArray = intArrayOf(1,1,1,1,1,1,1,0)
         //val result4add : IntArray = intArrayOf(0,0,0,0,0,0,0,1)
-        val result4add = 0x01
+        val result4add = 0x00
         assert(gb.performCalculation(0x01, 0x02, "add").contentEquals(result1add))
         assert(gb.performCalculation(0x1a, 0xc7, "add").contentEquals(result2add))
         assert(gb.performCalculation(0xff, 0xff, "add").contentEquals(result3add))
-        val test = gb.intToBinaryAdditionHex(0xfa, 0x06)
         assert(gb.intToBinaryAdditionHex(0xfa, 0x06).equals(result4add))
 
         // Addition with carry
@@ -41,8 +40,8 @@ class GameboyBinaryCalculationTest() {
         val result1sub : IntArray = intArrayOf(0,0,0,0,0,0,1,1)
         val result2sub : IntArray = intArrayOf(0,1,0,1,0,0,1,1)
         val result3sub : IntArray = intArrayOf(0,0,0,0,0,0,0,0)
-        val result4sub = 239
-        val result5sub = 18
+        val result4sub = 240
+        val result5sub = 19
 
 //        assert(gb.performCalculation(0x04, 0x01, "sub").contentEquals(result1sub))
 //        assert(gb.performCalculation(0x1a, 0xc7, "sub").contentEquals(result2sub))
