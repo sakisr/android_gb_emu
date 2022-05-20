@@ -493,39 +493,75 @@ class GameBoy {
             // Load Accumulator Register into Accumulator Register
             0x7f -> regAF[0] = regAF[0]
 
-            //0x80 ->
-            //0x81 ->
-            //0x82 ->
-            //0x83 ->
-            //0x84 ->
-            //0x85 ->
-            //0x86 ->
-            //0x87 ->
-            //0x88 ->
-            //0x89 ->
-            //0x8a ->
-            //0x8b ->
-            //0x8c ->
-            //0x8d ->
-            //0x8e ->
-            //0x8f ->
+            // ADD instructions (Without existing carry)
+            // A = A+B
+            0x80 -> regAF[0] = intToBinaryAdditionHex(regAF[0], regBC[0])
+            // A = A+C
+            0x81 -> regAF[0] = intToBinaryAdditionHex(regAF[0], regBC[1])
+            // A = A+D
+            0x82 -> regAF[0] = intToBinaryAdditionHex(regAF[0], regDE[0])
+            // A = A+E
+            0x83 -> regAF[0] = intToBinaryAdditionHex(regAF[0], regDE[1])
+            // A = A+H
+            0x84 -> regAF[0] = intToBinaryAdditionHex(regAF[0], regHL[0])
+            // A = A+L
+            0x85 -> regAF[0] = intToBinaryAdditionHex(regAF[0], regHL[1])
+            // A = A+memory[regHL]
+            0x86 -> regAF[0] = intToBinaryAdditionHex(regAF[0], memory[bytesToWord(regHL[0], regHL[1])].toUByte().toInt())
+            // A = A+A
+            0x87 -> regAF[0] = intToBinaryAdditionHex(regAF[0], regAF[0])
+            // ADD Instructions (With existing carry)
+            // A = A+(B+carry)
+            0x88 -> regAF[0] = intToBinaryAdditionHex(regAF[0], intToBinaryAdditionHex(regBC[0], getFlag('C')))
+            // A = A+(C+carry)
+            0x89 -> regAF[0] = intToBinaryAdditionHex(regAF[0], intToBinaryAdditionHex(regBC[1], getFlag('C')))
+            // A = A+(D+carry)
+            0x8a -> regAF[0] = intToBinaryAdditionHex(regAF[0], intToBinaryAdditionHex(regDE[0], getFlag('C')))
+            // A = A+(E+carry)
+            0x8b -> regAF[0] = intToBinaryAdditionHex(regAF[0], intToBinaryAdditionHex(regDE[1], getFlag('C')))
+            // A = A+(H+carry)
+            0x8c -> regAF[0] = intToBinaryAdditionHex(regAF[0], intToBinaryAdditionHex(regHL[0], getFlag('C')))
+            // A = A+(L+carry)
+            0x8d -> regAF[0] = intToBinaryAdditionHex(regAF[0], intToBinaryAdditionHex(regHL[1], getFlag('C')))
+            // A = A+(memory[regHL]+carry)
+            0x8e -> regAF[0] = intToBinaryAdditionHex(regAF[0], intToBinaryAdditionHex(memory[bytesToWord(regHL[0], regHL[1])].toUByte().toInt(), getFlag('C')))
+            // A = A+(A+carry)
+            0x8f -> regAF[0] = intToBinaryAdditionHex(regAF[0], intToBinaryAdditionHex(regAF[0], getFlag('C')))
 
-            //0x90 ->
-            //0x91 ->
-            //0x92 ->
-            //0x93 ->
-            //0x94 ->
-            //0x95 ->
-            //0x96 ->
-            //0x97 ->
-            //0x98 ->
-            //0x99 ->
-            //0x9a ->
-            //0x9b ->
-            //0x9c ->
-            //0x9d ->
-            //0x9e ->
-            //0x9f ->
+            // SUB instructions (Without existing carry)
+            // A = A-B
+            0x90 -> regAF[0] = intToBinarySubtractionHex(regAF[0], regBC[0])
+            // A = A-C
+            0x91 -> regAF[0] = intToBinarySubtractionHex(regAF[0], regBC[1])
+            // A = A-D
+            0x92 -> regAF[0] = intToBinarySubtractionHex(regAF[0], regDE[0])
+            // A = A-E
+            0x93 -> regAF[0] = intToBinarySubtractionHex(regAF[0], regDE[1])
+            // A = A-H
+            0x94 -> regAF[0] = intToBinarySubtractionHex(regAF[0], regHL[0])
+            // A = A-L
+            0x95 -> regAF[0] = intToBinarySubtractionHex(regAF[0], regHL[1])
+            // A = A-memory[regHL]
+            0x96 -> regAF[0] = intToBinarySubtractionHex(regAF[0], memory[bytesToWord(regHL[0], regHL[1])].toUByte().toInt())
+            // A = A-A
+            0x97 -> regAF[0] = intToBinarySubtractionHex(regAF[0], regAF[0])
+            // SUB Instructions (With existing carry)
+            // A = A-(B+carry)
+            0x98 -> regAF[0] = intToBinarySubtractionHex(regAF[0], intToBinaryAdditionHex(regBC[0], getFlag('C')))
+            // A = A-(C+carry)
+            0x99 -> regAF[0] = intToBinarySubtractionHex(regAF[0], intToBinaryAdditionHex(regBC[1], getFlag('C')))
+            // A = A-(D+carry)
+            0x9a -> regAF[0] = intToBinarySubtractionHex(regAF[0], intToBinaryAdditionHex(regDE[0], getFlag('C')))
+            // A = A-(E+carry)
+            0x9b -> regAF[0] = intToBinarySubtractionHex(regAF[0], intToBinaryAdditionHex(regDE[1], getFlag('C')))
+            // A = A-(H+carry)
+            0x9c -> regAF[0] = intToBinarySubtractionHex(regAF[0], intToBinaryAdditionHex(regHL[0], getFlag('C')))
+            // A = A-(L+carry)
+            0x9d -> regAF[0] = intToBinarySubtractionHex(regAF[0], intToBinaryAdditionHex(regHL[1], getFlag('C')))
+            // A = A-(memory[regHL]+carry)
+            0x9e -> regAF[0] = intToBinarySubtractionHex(regAF[0], intToBinaryAdditionHex(memory[bytesToWord(regHL[0], regHL[1])].toUByte().toInt(), getFlag('C')))
+            // A = A-(A+carry)
+            0x9f -> regAF[0] = intToBinarySubtractionHex(regAF[0], intToBinaryAdditionHex(regAF[0], getFlag('C')))
 
             //0xa0 ->
             //0xa1 ->
@@ -1031,20 +1067,20 @@ class GameBoy {
         print("Num 1 is: " + Integer.toHexString(num1) + " Num2 is: " + Integer.toHexString(num2) + " result: " + Integer.toHexString(result))
         if(result>255) {
             result = result - 256
-            setFlag('C' , 1)
+            //setFlag('C' , 1)
         } else {
-            setFlag('C' , 0)
+            //setFlag('C' , 0)
         }
         if (result == 0) {
-            setFlag('Z', 1)
+            //setFlag('Z', 1)
         } else {
-            setFlag('Z', 0)
+            //setFlag('Z', 0)
         }
-        setFlag('N', 0)
+        //setFlag('N', 0)
         if ((num1.and(0xf)+(num2.and(0xf))) > 0xf) {
-            setFlag('H', 1)
+            //setFlag('H', 1)
         } else {
-            setFlag('H', 0)
+            //setFlag('H', 0)
         }
         print("Carry: " + getFlag('C') + "HalfCarry: " + getFlag('H'))
         readLine()
