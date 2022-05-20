@@ -580,7 +580,6 @@ class GameBoy {
             0xa6 -> regAF[0] = andCalculation(regAF[0], memory[bytesToWord(regHL[0], regHL[1])].toUByte().toInt())
             // A = A AND A
             0xa7 -> regAF[0] = andCalculation(regAF[0], regAF[0])
-
             // XOR Instructions
             // A = A XOR B
             0xa8 -> regAF[0] = xorCalculation(regAF[0], regBC[0])
@@ -599,50 +598,40 @@ class GameBoy {
             // A = A XOR A
             0xaf -> regAF[0] = xorCalculation(regAF[0], regAF[0])
 
-
-            //0xa8 ->
-            //0xa9 ->
-            //0xaa ->
-            //0xab ->
-            //0xac ->
-            //0xad ->
-            //0xae ->
-            // Accumulator Register = Accumulator Register XOR Accumulator Register (Resets Accumulator Register)
-            0xaf -> {
-                regAF[0] = regAF[0].xor(regAF[0])
-                setFlag('Z', 1)
-                setFlag('N', 0)
-                setFlag('H', 0)
-                setFlag('C', 0)
-            }
-
-            //0xb0 ->
-            // Accumulator Register = Register C OR Accumulator Register
-            0xb1 -> {
-                regAF[0] = regBC[1].or(regAF[0])
-                if(regAF[0] == 0) {
-                    setFlag('Z', 1)
-                } else {
-                    setFlag('Z', 0)
-                }
-                setFlag('N', 0)
-                setFlag('H', 0)
-                setFlag('C', 0)
-            }
-            //0xb2 ->
-            //0xb3 ->
-            //0xb4 ->
-            //0xb5 ->
-            //0xb6 ->
-            //0xb7 ->
-            //0xb8 ->
-            //0xb9 ->
-            //0xba ->
-            //0xbb ->
-            //0xbc ->
-            //0xbd ->
-            //0xbe ->
-            //0xbf ->
+            // OR Instructions
+            // A = A OR B
+            0xb0 -> regAF[0] = orCalculation(regAF[0], regBC[0])
+            // A = A OR C
+            0xb1 -> regAF[0] = orCalculation(regAF[0], regBC[1])
+            // A = A OR D
+            0xb2 -> regAF[0] = orCalculation(regAF[0], regDE[0])
+            // A = A OR E
+            0xb3 -> regAF[0] = orCalculation(regAF[0], regDE[1])
+            // A = A OR H
+            0xb4 -> regAF[0] = orCalculation(regAF[0], regHL[0])
+            // A = A OR L
+            0xb5 -> regAF[0] = orCalculation(regAF[0], regHL[1])
+            // A = A OR memory[regHL]
+            0xb6 -> regAF[0] = orCalculation(regAF[0], memory[bytesToWord(regHL[0], regHL[1])].toUByte().toInt())
+            // A = A OR A
+            0xb7 -> regAF[0] = orCalculation(regAF[0], regAF[0])
+            // Compare Instructions (Subtract two integers and set flags)
+            // A-B
+            0xb8 -> intToBinarySubtractionHex(regAF[0], regBC[0])
+            // A-C
+            0xb9 -> intToBinarySubtractionHex(regAF[0], regBC[1])
+            // A-D
+            0xba -> intToBinarySubtractionHex(regAF[0], regDE[0])
+            // A-E
+            0xbb -> intToBinarySubtractionHex(regAF[0], regDE[1])
+            // A-H
+            0xbc -> intToBinarySubtractionHex(regAF[0], regHL[0])
+            // A-L
+            0xbd -> intToBinarySubtractionHex(regAF[0], regHL[1])
+            // A-memory[regHL]
+            0xbe -> intToBinarySubtractionHex(regAF[0], memory[bytesToWord(regHL[0], regHL[1])].toUByte().toInt())
+            // A-A
+            0xbf -> intToBinarySubtractionHex(regAF[0], regAF[0])
 
             // Check flag Z, if it equals 0 then pop Program Counter from stack
             0xc0 -> {
@@ -1145,6 +1134,19 @@ class GameBoy {
     // Performs XOR calculation between two integers, and sets flags
     fun xorCalculation(num1: Int, num2: Int) : Int {
         val result = num1.xor(num2)
+        if(result == 0) {
+            setFlag('Z', 1)
+        } else {
+            setFlag('Z', 0)
+        }
+        setFlag('N', 0)
+        setFlag('H', 0)
+        setFlag('C', 0)
+        return result
+    }
+    // Performs OR calculation between two integers, and sets flags
+    fun orCalculation(num1: Int, num2: Int) : Int {
+        val result = num1.or(num2)
         if(result == 0) {
             setFlag('Z', 1)
         } else {
