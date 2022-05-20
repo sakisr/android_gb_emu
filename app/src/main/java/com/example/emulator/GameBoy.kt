@@ -563,25 +563,43 @@ class GameBoy {
             // A = A-(A+carry)
             0x9f -> regAF[0] = intToBinarySubtractionHex(regAF[0], intToBinaryAdditionHex(regAF[0], getFlag('C')))
 
-            //0xa0 ->
-            //0xa1 ->
-            //0xa2 ->
-            //0xa3 ->
-            //0xa4 ->
-            //0xa5 ->
-            //0xa6 ->
-            // Accumulator Register = Accumulator Register AND Accumulator Register
-            0xa7 -> {
-                regAF[0] = regAF[0].and(regAF[0])
-                if(regAF[0] == 0) {
-                    setFlag('Z', 1)
-                } else {
-                    setFlag('Z', 0)
-                }
-                setFlag('N', 0)
-                setFlag('H', 1)
-                setFlag('C', 0)
-            }
+            // AND Instructions
+            // A = A AND B
+            0xa0 -> regAF[0] = andCalculation(regAF[0], regBC[0])
+            // A = A AND C
+            0xa1 -> regAF[0] = andCalculation(regAF[0], regBC[1])
+            // A = A AND D
+            0xa2 -> regAF[0] = andCalculation(regAF[0], regDE[0])
+            // A = A AND E
+            0xa3 -> regAF[0] = andCalculation(regAF[0], regDE[1])
+            // A = A AND H
+            0xa4 -> regAF[0] = andCalculation(regAF[0], regHL[0])
+            // A = A AND L
+            0xa5 -> regAF[0] = andCalculation(regAF[0], regHL[1])
+            // A = A AND memory[regHL]
+            0xa6 -> regAF[0] = andCalculation(regAF[0], memory[bytesToWord(regHL[0], regHL[1])].toUByte().toInt())
+            // A = A AND A
+            0xa7 -> regAF[0] = andCalculation(regAF[0], regAF[0])
+
+            // XOR Instructions
+            // A = A XOR B
+            0xa8 -> regAF[0] = xorCalculation(regAF[0], regBC[0])
+            // A = A XOR C
+            0xa9 -> regAF[0] = xorCalculation(regAF[0], regBC[1])
+            // A = A XOR D
+            0xaa -> regAF[0] = xorCalculation(regAF[0], regDE[0])
+            // A = A XOR E
+            0xab -> regAF[0] = xorCalculation(regAF[0], regDE[1])
+            // A = A XOR H
+            0xac -> regAF[0] = xorCalculation(regAF[0], regHL[0])
+            // A = A XOR L
+            0xad -> regAF[0] = xorCalculation(regAF[0], regHL[1])
+            // A = A XOR memory[regHL]
+            0xae -> regAF[0] = xorCalculation(regAF[0], memory[bytesToWord(regHL[0], regHL[1])].toUByte().toInt())
+            // A = A XOR A
+            0xaf -> regAF[0] = xorCalculation(regAF[0], regAF[0])
+
+
             //0xa8 ->
             //0xa9 ->
             //0xaa ->
@@ -1109,6 +1127,32 @@ class GameBoy {
         }
         print("Carry: " + getFlag('C') + "HalfCarry: " + getFlag('H'))
         readLine()
+        return result
+    }
+    // Performs AND calculation between two integers, and sets flags
+    fun andCalculation(num1: Int, num2: Int) : Int {
+        val result = num1.and(num2)
+        if(result == 0) {
+            setFlag('Z', 1)
+        } else {
+            setFlag('Z', 0)
+        }
+        setFlag('N', 0)
+        setFlag('H', 1)
+        setFlag('C', 0)
+        return result
+    }
+    // Performs XOR calculation between two integers, and sets flags
+    fun xorCalculation(num1: Int, num2: Int) : Int {
+        val result = num1.xor(num2)
+        if(result == 0) {
+            setFlag('Z', 1)
+        } else {
+            setFlag('Z', 0)
+        }
+        setFlag('N', 0)
+        setFlag('H', 0)
+        setFlag('C', 0)
         return result
     }
     // Converts two integers to binary and subtracts them
