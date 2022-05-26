@@ -643,16 +643,68 @@ class GameBoy {
                     regSP += 0x01
                 }
             }
-            //0xc1 ->
-            //0xc2 ->
+            // Pop from stack into registers BC
+            0xc1 -> {
+                regBC[1] = memory[regSP].toUByte().toInt()
+                memory[regSP] = 0
+                regSP += 0x01
+                regBC[0] = memory[regSP].toUByte().toInt()
+                regSP += 0x01
+            }
+            // If flag Z is 0, load next two bytes into Program Counter
+            0xc2 -> {
+                if(getFlag('Z') == 0) {
+                    regPC = getNextTwoBytes(regPC)
+                } else {
+                    regPC += 0x02
+                }
+            }
             // Load next two bytes to Program Counter
             0xc3 -> regPC = getNextTwoBytes(regPC)
-            //0xc3 ->
-            //0xc4 ->
-            //0xc5 ->
-            //0xc6 ->
-            //0xc7 ->
-            //0xc8 ->
+            // TODO: Check if correct
+            // If flag Z is 0, push Program Counter to stack and load next two bytes from memory into Program Counter
+            0xc4 -> {
+                if(getFlag('Z') == 0) {
+                    regSP -= 0x01
+                    memory[regSP] = splitToBytes(regPC, 1)
+                    regSP -= 0x01
+                    memory[regSP] = splitToBytes(regPC, 2)
+                    regPC = getNextTwoBytes(regPC)
+                } else {
+                    regPC += 0x02
+                }
+            }
+            // Push registers BC to stack
+            0xc5 -> {
+                regSP -= 0x01
+                memory[regSP] = regBC[0].toUByte().toByte()
+                regSP -= 0x01
+                memory[regSP] = regBC[1].toUByte().toByte()
+            }
+            // A = A + next byte
+            0xc6 -> {
+                regAF[0] = intToBinaryAdditionHex(regAF[0], memory[regPC].toUByte().toInt())
+                regPC += 0x01
+            }
+            // RST 0 - Push Program Counter to stack and set Program Counter to 0x0000
+            0xc7 -> {
+                regSP -= 0x01
+                memory[regSP] = splitToBytes(regPC, 1)
+                regSP -= 0x01
+                memory[regSP] = splitToBytes(regPC, 2)
+                regPC = 0x0000
+            }
+            // TODO: Check if 0xc8 or 0xc9 implementation is better for popping
+            // If flag Z is 1, pop Program Counter from stack
+            0xc8 -> {
+                if(getFlag('Z') == 1) {
+                    regPC = bytesToWord(memory[regSP+1].toUByte().toInt(), memory[regSP].toUByte().toInt())
+                    memory[regSP] = 0
+                    regSP += 0x01
+                    memory[regSP] = 0
+                    regSP += 0x01
+                }
+            }
             // Return - Pop stored Program Counter value from stack back into Program Counter to return from subroutine
             0xc9 -> {
                 regPC = getNextTwoBytes(regSP)
@@ -661,29 +713,100 @@ class GameBoy {
                 memory[regSP] = 0
                 regSP += 0x01
             }
-            //0xca ->
+            // If flag Z is 1, load next two bytes into Program Counter
+            0xca -> {
+                if(getFlag('Z') == 1) {
+                    regPC = getNextTwoBytes(regPC)
+                } else {
+                    regPC += 0x02
+                }
+            }
             // CB instructions
             0xcb -> {
                 cbInstructions(memory[regPC].toUByte().toInt())
                 regPC += 0x01
             }
+            // If flag Z is 1, push Program Counter to stack and load next two bytes in memory[regPC] to Program Counter
+            0xcc -> {
+                if(getFlag('Z') == 1) {
+                    regSP -= 0x01
+                    memory[regSP] = splitToBytes(regPC, 1)
+                    regSP -= 0x01
+                    memory[regSP] = splitToBytes(regPC, 2)
+                    regPC = getNextTwoBytes(regPC)
+                } else {
+                    regPC += 0x02
+                }
+            }
             // Call - Push Program Counter to Stack, set new Stack Pointer and load next two bytes to Program Counter to call a subroutine
             0xcd -> {
+                regSP -= 0x01
+                memory[regSP] = splitToBytes(regPC, 1)
+                regSP -= 0x01
+                memory[regSP] = splitToBytes(regPC, 2)
+                regPC = getNextTwoBytes(regPC)
+                /*
                 regPC += 0x02
                 regSP -= 0x01
                 memory[regSP] = splitToBytes(regPC, 1)
                 regSP -= 0x01
                 memory[regSP] = splitToBytes(regPC, 2)
                 regPC = getNextTwoBytes(regPC-0x02)
+            */
             }
-            //0xce ->
-            //0xcf ->
+            // A = A + (next byte + carry)
+            0xce -> {
+                regAF[0] = intToBinaryAdditionHex(regAF[0], intToBinaryAdditionHex(memory[regPC].toUByte().toInt(), getFlag('C')))
+                regPC += 0x01
+            }
+            // RST 1 - Push Program Counter to stack and set Program Counter to 0x0008
+            0xcf -> {
+                regSP -= 0x01
+                memory[regSP] = splitToBytes(regPC, 1)
+                regSP -= 0x01
+                memory[regSP] = splitToBytes(regPC, 2)
+                regPC = 0x0008
+            }
 
-            //0xd0 ->
-            //0xd1 ->
-            //0xd2 ->
-            //0xd3 ->
-            //0xd4 ->
+            // Check flag C, if it equals 0 then pop Program Counter from stack
+            0xd0 -> {
+                if(getFlag('C') == 0) {
+                    regPC = getNextTwoBytes(regSP)
+                    memory[regSP] = 0
+                    regSP += 0x01
+                    memory[regSP] = 0
+                    regSP += 0x01
+                }
+            }
+            // Pop from stack into registers DE
+            0xd1 -> {
+                regDE[1] = memory[regSP].toUByte().toInt()
+                memory[regSP] = 0
+                regSP += 0x01
+                regDE[0] = memory[regSP].toUByte().toInt()
+                regSP += 0x01
+            }
+            // If flag C is 0, load next two bytes into Program Counter
+            0xd2 -> {
+                if(getFlag('C') == 0) {
+                    regPC = getNextTwoBytes(regPC)
+                } else {
+                    regPC += 0x02
+                }
+            }
+            // TODO: Check if correct
+            // If flag C is 0, push Program Counter to stack and load next two bytes from memory into Program Counter
+            0xd4 -> {
+                if(getFlag('C') == 0) {
+                    regSP -= 0x01
+                    memory[regSP] = splitToBytes(regPC, 1)
+                    regSP -= 0x01
+                    memory[regSP] = splitToBytes(regPC, 2)
+                    regPC = getNextTwoBytes(regPC)
+                } else {
+                    regPC += 0x02
+                }
+            }
             // TODO: Check if stack pointer is correct
             // Push registers DE into stack
             0xd5 -> {
@@ -692,16 +815,73 @@ class GameBoy {
                 regSP -= 0x01
                 memory[regSP] = regDE[1].toUByte().toByte()
             }
-            //0xd6 ->
-            //0xd7 ->
-            //0xd8 ->
-            //0xd9 ->
-            //0xda ->
-            //0xdb ->
-            //0xdc ->
-            //0xdd ->
-            //0xde ->
-            //0xdf ->
+            // A = A - next byte
+            0xd6 -> {
+                regAF[0] = intToBinarySubtractionHex(regAF[0], memory[regPC].toUByte().toInt())
+                regPC += 0x01
+            }
+            // RST 2 - Push Program Counter to stack and set Program Counter to 0x0010
+            0xd7 -> {
+                regSP -= 0x01
+                memory[regSP] = splitToBytes(regPC, 1)
+                regSP -= 0x01
+                memory[regSP] = splitToBytes(regPC, 2)
+                regPC = 0x0010
+            }
+            // TODO: Check if 0xc8 or 0xc9 implementation is better for popping
+            // If flag C is 1, pop Program Counter from stack
+            0xd8 -> {
+                if(getFlag('C') == 1) {
+                    regPC = bytesToWord(memory[regSP+1].toUByte().toInt(), memory[regSP].toUByte().toInt())
+                    memory[regSP] = 0
+                    regSP += 0x01
+                    memory[regSP] = 0
+                    regSP += 0x01
+                }
+            }
+            // TODO: Check Interrupt Flag
+            // Return Interrupt - Pop stored Program Counter value from stack back into Program Counter to return from subroutine
+            0xd9 -> {
+                regPC = getNextTwoBytes(regSP)
+                memory[regSP] = 0
+                regSP += 0x01
+                memory[regSP] = 0
+                regSP += 0x01
+                imeFlag = 0
+            }
+            // If flag C is 1, load next two bytes into Program Counter
+            0xda -> {
+                if(getFlag('C') == 1) {
+                    regPC = getNextTwoBytes(regPC)
+                } else {
+                    regPC += 0x02
+                }
+            }
+            // If flag C is 1, push Program Counter to stack and load next two bytes in memory[regPC] to Program Counter
+            0xdc -> {
+                if(getFlag('C') == 1) {
+                    regSP -= 0x01
+                    memory[regSP] = splitToBytes(regPC, 1)
+                    regSP -= 0x01
+                    memory[regSP] = splitToBytes(regPC, 2)
+                    regPC = getNextTwoBytes(regPC)
+                } else {
+                    regPC += 0x02
+                }
+            }
+            // A = A - (next byte + carry)
+            0xde -> {
+                regAF[0] = intToBinarySubtractionHex(regAF[0], intToBinaryAdditionHex(memory[regPC].toUByte().toInt(), getFlag('C')))
+                regPC += 0x01
+            }
+            // RST 3 - Push Program Counter to stack and set Program Counter to 0x0018
+            0xdf -> {
+                regSP -= 0x01
+                memory[regSP] = splitToBytes(regPC, 1)
+                regSP -= 0x01
+                memory[regSP] = splitToBytes(regPC, 2)
+                regPC = 0x0018
+            }
 
             // Store Accumulator Register value in memory address (0xff00+immediate byte)
             0xe0 -> {
@@ -714,9 +894,8 @@ class GameBoy {
                 regHL[1] = memory[regSP].toUByte().toInt()
                 regSP += 0x02
             }
-            //0xe2 ->
-            //0xe3 ->
-            //0xe4 ->
+            // Store Accumulator Register value in memory address (0xff00+register C)
+            0xe2 -> memory[0xff00+regBC[1]] = regAF[0].toByte()
             // Push registers HL into stack
             0xe5 -> {
                 memory[regSP-0x01] = regHL[0].toUByte().toByte()
@@ -725,6 +904,9 @@ class GameBoy {
             }
             // Store into Accumulator Register the results of (Accumulator Register AND immediate byte)
             0xe6 -> {
+                regAF[0] = andCalculation(regAF[0], memory[regPC].toUByte().toInt())
+                regPC += 0x01
+                /*
                 regAF[0] = (regAF[0] and memory[regPC].toUByte().toInt())
                 regPC += 0x01
                 if(regAF[0] == 0) {
@@ -735,20 +917,38 @@ class GameBoy {
                 setFlag('N', 0)
                 setFlag('H', 1)
                 setFlag('C', 0)
+                */
             }
-            //0xe7 ->
+            // RST 4 - Push Program Counter to stack and set Program Counter to 0x0020
+            0xe7 -> {
+                regSP -= 0x01
+                memory[regSP] = splitToBytes(regPC, 1)
+                regSP -= 0x01
+                memory[regSP] = splitToBytes(regPC, 2)
+                regPC = 0x0020
+            }
+            // regSP = next byte (signed) + regSP
             //0xe8 ->
-            //0xe9 ->
+            // Load registers HL to Program Counter
+            0xe9 -> regPC = bytesToWord(regHL[0], regHL[1])
             // Store Accumulator Register values to memory address (or register) pointed by next two bytes
             0xea -> {
                 memory[getNextTwoBytes(regPC)] = regAF[0].toByte()
                 regPC += 0x02
             }
-            //0xeb ->
-            //0xec ->
-            //0xed ->
-            //0xee ->
-            //0xef ->
+            // A = A XOR next byte
+            0xee -> {
+                regAF[0] = xorCalculation(regAF[0], memory[regPC].toUByte().toInt())
+                regPC += 0x01
+            }
+            // RST 5 - Push Program Counter to stack and set Program Counter to 0x0028
+            0xef -> {
+                regSP -= 0x01
+                memory[regSP] = splitToBytes(regPC, 1)
+                regSP -= 0x01
+                memory[regSP] = splitToBytes(regPC, 2)
+                regPC = 0x0028
+            }
 
             // Load into Accumulator Registor the contents of memory address (0xff00+immediate byte)
             0xf0 -> {
@@ -757,11 +957,18 @@ class GameBoy {
                 print("regAF[0]=" + regAF[0] + " memory[6c]: " + Integer.toHexString(memory[regPC].toUByte().toInt()) + " 0xff00+" + Integer.toHexString(memory[regPC].toUByte().toInt()) + ": " + Integer.toHexString(memory[0xff00+memory[regPC]].toUByte().toInt()))
                 regPC += 0x01
             }
-            //0xf1 ->
-            //0xf2 ->
+            // Pop stack into registers AF
+            0xf1 -> {
+                regAF[0] = memory[regSP+0x01].toUByte().toInt()
+                regAF[1] = memory[regSP].toUByte().toInt()
+                regSP += 0x02
+            }
+            // Load into Accumulator register memory[0xff00+register C]
+            0xf2 -> {
+                regAF[0] = memory[0xff00+regBC[1]].toUByte().toInt()
+            }
             // Reset Interrupt Master Enable flag
             0xf3 -> imeFlag = 0
-            //0xf4 ->
             // Push Accumulator Register and Flag Register to memory, using Stack Pointer
             0xf5 -> {
                 regSP -= 0x01
@@ -769,17 +976,32 @@ class GameBoy {
                 regSP -= 0x01
                 memory[regSP] = regAF[1].toUByte().toByte()
             }
-            //0xf6 ->
-            //0xf7 ->
+            // A = A OR next byte
+            0xf6 -> {
+                regAF[0] = orCalculation(regAF[0], memory[regPC].toUByte().toInt())
+                regPC += 0x01
+            }
+            // RST 6 - Push Program Counter to stack and set Program Counter to 0x0030
+            0xf7 -> {
+                regSP -= 0x01
+                memory[regSP] = splitToBytes(regPC, 1)
+                regSP -= 0x01
+                memory[regSP] = splitToBytes(regPC, 2)
+                regPC = 0x0030
+            }
+            // HL = next byte(signed) + regSP
             //0xf8 ->
-            //0xf9 ->
+            // Load registers HL into regSP
+            0xf9 -> regSP = bytesToWord(regHL[0], regHL[1])
             // Load into Accumulator Register the contents of memory[two immediate bytes]
             0xfa -> {
                 regAF[0] = memory[getNextTwoBytes(regPC)].toUByte().toInt()
                 print("loading memory[" + Integer.toHexString(getNextTwoBytes(regPC)) + "]=0x" + Integer.toHexString(memory[getNextTwoBytes(regPC)].toUByte().toInt()) + "\n")
                 regPC += 0x02
             }
-            //0xfb ->
+            // TODO: Check Interrupts
+            // Set Interrupt Master Enable flag and enable interrupts
+            0xfb -> imeFlag = 1
             //0xfc ->
             //0xfd ->
             // TODO: FLAGS
@@ -791,7 +1013,14 @@ class GameBoy {
                 //val lol = performCalculation(regAF[0], memory[regPC].toUByte().toInt(), "ADD")
                 regPC += 0x01
             }
-            //0xff ->
+            // RST 7 - Push Program Counter to stack and set Program Counter to 0x0038
+            0xff -> {
+                regSP -= 0x01
+                memory[regSP] = splitToBytes(regPC, 1)
+                regSP -= 0x01
+                memory[regSP] = splitToBytes(regPC, 2)
+                regPC = 0x0038
+            }
 
             else -> {
                 printRegisterStatus()
@@ -1064,8 +1293,8 @@ class GameBoy {
         } else {
             setFlag('H', 0)
         }
-        print("Carry: " + getFlag('C') + "HalfCarry: " + getFlag('H'))
-        readLine()
+        //print("Carry: " + getFlag('C') + "HalfCarry: " + getFlag('H'))
+        //readLine()
         return result
     }
     // Performs addition of two numbers and returns result without changing flags
@@ -1095,14 +1324,14 @@ class GameBoy {
     }
     fun intToBinarySubtractionHex(num1: Int, num2: Int) : Int {
         var result = num1 - num2
-        print("Num 1 is: " + Integer.toHexString(num1) + " Num2 is: " + Integer.toHexString(num2))
+        //print("Num 1 is: " + Integer.toHexString(num1) + " Num2 is: " + Integer.toHexString(num2))
         if(result<0) {
             result = result + 256
             setFlag('C' , 1)
         } else {
             setFlag('C' , 0)
         }
-        print("result: " + Integer.toHexString(result))
+        //print("result: " + Integer.toHexString(result))
         if (result == 0) {
             setFlag('Z', 1)
         } else {
@@ -1114,8 +1343,8 @@ class GameBoy {
         } else {
             setFlag('H', 0)
         }
-        print("Carry: " + getFlag('C') + "HalfCarry: " + getFlag('H'))
-        readLine()
+        //print("Carry: " + getFlag('C') + "HalfCarry: " + getFlag('H'))
+        //readLine()
         return result
     }
     // Performs AND calculation between two integers, and sets flags
@@ -1582,18 +1811,27 @@ class GameBoy {
     }
     // TODO
     // Rotates bits of selected register to selected direction
-    fun rotateBits(registerName: Char, direction: String) {
+    fun rotateBits(registerName: Char, direction: String) : Int {
         when(registerName) {
             'A','a' -> {
+                val torotate = Integer.toBinaryString(regAF[0])
                 when(direction) {
                     "left" -> {
-                        regAF[0] = 0xe4
-                        regAF[0] = regAF[0].shl(1)
-                        print("regA is: " + Integer.toHexString(regAF[0]) + "\n")
+                        print("torotate is: " + torotate)
+                        setFlag('C', torotate.substring(0).toInt())
+                        val rotated : String = ""
+                        for(i in 0..6) {
+                            rotated.plus(torotate.substring(i))
+                        }
+                        rotated.plus(torotate.substring(7))
+                        print("rotated is: " + rotated)
+                        regAF[0] = Integer.parseInt(rotated, 2)
+                        return regAF[0]
                     }
-                    //"right" -> {
-
-                    //}
+                    "right" -> {
+                        regAF[0] = regAF[0].shr(1)
+                        return regAF[0]
+                    }
                 }
             }
             //'B','b' -> {
@@ -1617,9 +1855,10 @@ class GameBoy {
             //"right" ->
             else -> {
                 print("Wrong direction. Enter left or right.\n")
-                return
+                return regAF[0]
             }
         }
+        return regAF[0]
     }
     // Print memory contents to csv file for debugging
     fun printMemoryToFile() {
