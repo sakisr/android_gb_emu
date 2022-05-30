@@ -61,9 +61,11 @@ class GameboyBinaryCalculationTest() {
     fun gameboy_test_rotateBits() {
         val gb = GameBoy()
         val result1 = 0xcf
+        val result2 = 0x2c
 
         gb.regAF[0] = 0xe7
-        val test = gb.rotateBits('A', "left")
         assert(gb.rotateBits('A', "left").equals(result1))
+        gb.regAF[0] = 0x58
+        assert(gb.rotateBits('A', "right").equals(result2))
     }
 }
