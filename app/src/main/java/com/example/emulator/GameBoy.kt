@@ -1811,25 +1811,30 @@ class GameBoy {
     }
     // TODO
     // Rotates bits of selected register to selected direction
+    // Carry flag gets set with first bit if rotating to the left, and last bit if rotating to the right
     fun rotateBits(registerName: Char, direction: String) : Int {
         when(registerName) {
             'A','a' -> {
-                val torotate = Integer.toBinaryString(regAF[0])
+                val torotate = Integer.toBinaryString(regAF[0]).padStart(8, '0')
                 when(direction) {
                     "left" -> {
-                        print("torotate is: " + torotate)
-                        setFlag('C', torotate.substring(0).toInt())
-                        val rotated : String = ""
-                        for(i in 0..6) {
-                            rotated.plus(torotate.substring(i))
+                        setFlag('C', torotate.substring(0,1).toInt())
+                        var rotated = ""
+                        for(i in 1..7) {
+                            rotated = rotated.plus(torotate.substring(i,i+1))
                         }
-                        rotated.plus(torotate.substring(7))
-                        print("rotated is: " + rotated)
+                        rotated = rotated.plus(torotate.substring(0,1))
                         regAF[0] = Integer.parseInt(rotated, 2)
                         return regAF[0]
                     }
                     "right" -> {
-                        regAF[0] = regAF[0].shr(1)
+                        setFlag('C', torotate.substring(6,7).toInt())
+                        var rotated = ""
+                        rotated = rotated.plus(torotate.substring(6,7))
+                        for(i in 0..6) {
+                            rotated = rotated.plus(torotate.substring(i,i+1))
+                        }
+                        regAF[0] = Integer.parseInt(rotated, 2)
                         return regAF[0]
                     }
                 }
