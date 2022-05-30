@@ -138,4 +138,184 @@ class GameboyBinaryCalculationTest() {
         gb.rotateBits('L', "right")
         assert(gb.regHL[1].equals(result2L))
     }
+
+    @Test
+    fun gameboy_test_rotateBitsThroughCarry() {
+        val gb = GameBoy()
+
+        // Testing register A bit rotation through carry
+        val result1A = 0xcb
+        gb.regAF[0] = 0xe5
+        gb.setFlag('C', 1)
+        gb.rotateBitsThroughCarry('A', "left")
+        assert(gb.regAF[0].equals(result1A))
+
+        val result2A = 0xf2
+        gb.regAF[0] = 0xe5
+        gb.setFlag('C', 1)
+        gb.rotateBitsThroughCarry('A', "right")
+        assert(gb.regAF[0].equals(result2A))
+
+        val result3A = 0xca
+        gb.regAF[0] = 0xe5
+        gb.setFlag('C', 0)
+        gb.rotateBitsThroughCarry('A', "left")
+        assert(gb.regAF[0].equals(result3A))
+
+        val result4A = 0x72
+        gb.regAF[0] = 0xe5
+        gb.setFlag('C', 0)
+        gb.rotateBitsThroughCarry('A', "right")
+        assert(gb.regAF[0].equals(result4A))
+
+        // Testing register B bit rotation through carry
+        val result1B = 0xcb
+        gb.regBC[0] = 0xe5
+        gb.setFlag('C', 1)
+        gb.rotateBitsThroughCarry('B', "left")
+        assert(gb.regBC[0].equals(result1B))
+
+        val result2B = 0xf2
+        gb.regBC[0] = 0xe5
+        gb.setFlag('C', 1)
+        gb.rotateBitsThroughCarry('B', "right")
+        assert(gb.regBC[0].equals(result2B))
+
+        val result3B = 0xca
+        gb.regBC[0] = 0xe5
+        gb.setFlag('C', 0)
+        gb.rotateBitsThroughCarry('B', "left")
+        assert(gb.regBC[0].equals(result3B))
+
+        val result4B = 0x72
+        gb.regBC[0] = 0xe5
+        gb.setFlag('C', 0)
+        gb.rotateBitsThroughCarry('B', "right")
+        assert(gb.regBC[0].equals(result4B))
+
+        // Testing register C bit rotation through carry
+        val result1C = 0xcb
+        gb.regBC[1] = 0xe5
+        gb.setFlag('C', 1)
+        gb.rotateBitsThroughCarry('C', "left")
+        assert(gb.regBC[1].equals(result1C))
+
+        val result2C = 0xf2
+        gb.regBC[1] = 0xe5
+        gb.setFlag('C', 1)
+        gb.rotateBitsThroughCarry('C', "right")
+        assert(gb.regBC[1].equals(result2C))
+
+        val result3C = 0xca
+        gb.regBC[1] = 0xe5
+        gb.setFlag('C', 0)
+        gb.rotateBitsThroughCarry('C', "left")
+        assert(gb.regBC[1].equals(result3C))
+
+        val result4C = 0x72
+        gb.regBC[1] = 0xe5
+        gb.setFlag('C', 0)
+        gb.rotateBitsThroughCarry('C', "right")
+        assert(gb.regBC[1].equals(result4C))
+
+        // Testing register D bit rotation through carry
+        val result1D = 0xcb
+        gb.regDE[0] = 0xe5
+        gb.setFlag('C', 1)
+        gb.rotateBitsThroughCarry('D', "left")
+        assert(gb.regDE[0].equals(result1D))
+
+        val result2D = 0xf2
+        gb.regDE[0] = 0xe5
+        gb.setFlag('C', 1)
+        gb.rotateBitsThroughCarry('D', "right")
+        assert(gb.regDE[0].equals(result2D))
+
+        val result3D = 0xca
+        gb.regDE[0] = 0xe5
+        gb.setFlag('C', 0)
+        gb.rotateBitsThroughCarry('D', "left")
+        assert(gb.regDE[0].equals(result3D))
+
+        val result4D = 0x72
+        gb.regDE[0] = 0xe5
+        gb.setFlag('C', 0)
+        gb.rotateBitsThroughCarry('D', "right")
+        assert(gb.regDE[0].equals(result4D))
+
+        // Testing register E bit rotation through carry
+        val result1E = 0xcb
+        gb.regDE[1] = 0xe5
+        gb.setFlag('C', 1)
+        gb.rotateBitsThroughCarry('E', "left")
+        assert(gb.regDE[1].equals(result1E))
+
+        val result2E = 0xf2
+        gb.regDE[1] = 0xe5
+        gb.setFlag('C', 1)
+        gb.rotateBitsThroughCarry('E', "right")
+        assert(gb.regDE[1].equals(result2E))
+
+        val result3E = 0xca
+        gb.regDE[1] = 0xe5
+        gb.setFlag('C', 0)
+        gb.rotateBitsThroughCarry('E', "left")
+        assert(gb.regDE[1].equals(result3E))
+
+        val result4E = 0x72
+        gb.regDE[1] = 0xe5
+        gb.setFlag('C', 0)
+        gb.rotateBitsThroughCarry('E', "right")
+        assert(gb.regDE[1].equals(result4E))
+
+        // Testing register H bit rotation through carry
+        val result1H = 0xcb
+        gb.regHL[0] = 0xe5
+        gb.setFlag('C', 1)
+        gb.rotateBitsThroughCarry('H', "left")
+        assert(gb.regHL[0].equals(result1H))
+
+        val result2H = 0xf2
+        gb.regHL[0] = 0xe5
+        gb.setFlag('C', 1)
+        gb.rotateBitsThroughCarry('H', "right")
+        assert(gb.regHL[0].equals(result2H))
+
+        val result3H = 0xca
+        gb.regHL[0] = 0xe5
+        gb.setFlag('C', 0)
+        gb.rotateBitsThroughCarry('H', "left")
+        assert(gb.regHL[0].equals(result3H))
+
+        val result4H = 0x72
+        gb.regHL[0] = 0xe5
+        gb.setFlag('C', 0)
+        gb.rotateBitsThroughCarry('H', "right")
+        assert(gb.regHL[0].equals(result4H))
+
+        // Testing register L bit rotation through carry
+        val result1L = 0xcb
+        gb.regHL[1] = 0xe5
+        gb.setFlag('C', 1)
+        gb.rotateBitsThroughCarry('L', "left")
+        assert(gb.regHL[1].equals(result1L))
+
+        val result2L = 0xf2
+        gb.regHL[1] = 0xe5
+        gb.setFlag('C', 1)
+        gb.rotateBitsThroughCarry('L', "right")
+        assert(gb.regHL[1].equals(result2L))
+
+        val result3L = 0xca
+        gb.regHL[1] = 0xe5
+        gb.setFlag('C', 0)
+        gb.rotateBitsThroughCarry('L', "left")
+        assert(gb.regHL[1].equals(result3L))
+
+        val result4L = 0x72
+        gb.regHL[1] = 0xe5
+        gb.setFlag('C', 0)
+        gb.rotateBitsThroughCarry('L', "right")
+        assert(gb.regHL[1].equals(result4L))
+    }
 }
