@@ -1812,58 +1812,212 @@ class GameBoy {
     // TODO
     // Rotates bits of selected register to selected direction
     // Carry flag gets set with first bit if rotating to the left, and last bit if rotating to the right
-    fun rotateBits(registerName: Char, direction: String) : Int {
-        when(registerName) {
-            'A','a' -> {
+    fun rotateBits(registerName: Char, direction: String) {
+        when (registerName) {
+            'A', 'a' -> {
                 val torotate = Integer.toBinaryString(regAF[0]).padStart(8, '0')
-                when(direction) {
+                when (direction) {
                     "left" -> {
-                        setFlag('C', torotate.substring(0,1).toInt())
+                        setFlag('Z', 0)
+                        setFlag('N', 0)
+                        setFlag('H', 0)
+                        setFlag('C', torotate.substring(0, 1).toInt())
                         var rotated = ""
-                        for(i in 1..7) {
-                            rotated = rotated.plus(torotate.substring(i,i+1))
+                        for (i in 1..7) {
+                            rotated = rotated.plus(torotate.substring(i, i + 1))
                         }
-                        rotated = rotated.plus(torotate.substring(0,1))
+                        rotated = rotated.plus(torotate.substring(0, 1))
                         regAF[0] = Integer.parseInt(rotated, 2)
-                        return regAF[0]
                     }
                     "right" -> {
-                        setFlag('C', torotate.substring(6,7).toInt())
+                        setFlag('Z', 0)
+                        setFlag('N', 0)
+                        setFlag('H', 0)
+                        setFlag('C', torotate.substring(6, 7).toInt())
                         var rotated = ""
-                        rotated = rotated.plus(torotate.substring(6,7))
-                        for(i in 0..6) {
-                            rotated = rotated.plus(torotate.substring(i,i+1))
+                        rotated = rotated.plus(torotate.substring(6, 7))
+                        for (i in 0..6) {
+                            rotated = rotated.plus(torotate.substring(i, i + 1))
                         }
                         regAF[0] = Integer.parseInt(rotated, 2)
-                        return regAF[0]
                     }
                 }
             }
-            //'B','b' -> {
-
-            //}
-            //'C','c' -> {
-
-            //}
-            //'D','d' -> {
-
-            //}
-            //'E','e' -> {
-
-            //}
-            //'H','h' -> {
-
-            //}
-            //'L','l' -> {
-
-            //}
-            //"right" ->
-            else -> {
-                print("Wrong direction. Enter left or right.\n")
-                return regAF[0]
+            'B', 'b' -> {
+                val torotate = Integer.toBinaryString(regBC[0]).padStart(8, '0')
+                when (direction) {
+                    "left" -> {
+                        setFlag('Z', 0)
+                        setFlag('N', 0)
+                        setFlag('H', 0)
+                        setFlag('C', torotate.substring(0, 1).toInt())
+                        var rotated = ""
+                        for (i in 1..7) {
+                            rotated = rotated.plus(torotate.substring(i, i + 1))
+                        }
+                        rotated = rotated.plus(torotate.substring(0, 1))
+                        regBC[0] = Integer.parseInt(rotated, 2)
+                    }
+                    "right" -> {
+                        setFlag('Z', 0)
+                        setFlag('N', 0)
+                        setFlag('H', 0)
+                        setFlag('C', torotate.substring(6, 7).toInt())
+                        var rotated = ""
+                        rotated = rotated.plus(torotate.substring(6, 7))
+                        for (i in 0..6) {
+                            rotated = rotated.plus(torotate.substring(i, i + 1))
+                        }
+                        regBC[0] = Integer.parseInt(rotated, 2)
+                    }
+                }
+            }
+            'C', 'c' -> {
+                val torotate = Integer.toBinaryString(regBC[1]).padStart(8, '0')
+                when (direction) {
+                    "left" -> {
+                        setFlag('Z', 0)
+                        setFlag('N', 0)
+                        setFlag('H', 0)
+                        setFlag('C', torotate.substring(0, 1).toInt())
+                        var rotated = ""
+                        for (i in 1..7) {
+                            rotated = rotated.plus(torotate.substring(i, i + 1))
+                        }
+                        rotated = rotated.plus(torotate.substring(0, 1))
+                        regBC[1] = Integer.parseInt(rotated, 2)
+                    }
+                    "right" -> {
+                        setFlag('Z', 0)
+                        setFlag('N', 0)
+                        setFlag('H', 0)
+                        setFlag('C', torotate.substring(6, 7).toInt())
+                        var rotated = ""
+                        rotated = rotated.plus(torotate.substring(6, 7))
+                        for (i in 0..6) {
+                            rotated = rotated.plus(torotate.substring(i, i + 1))
+                        }
+                        regBC[1] = Integer.parseInt(rotated, 2)
+                    }
+                }
+            }
+            'D', 'd' -> {
+                val torotate = Integer.toBinaryString(regDE[0]).padStart(8, '0')
+                when (direction) {
+                    "left" -> {
+                        setFlag('Z', 0)
+                        setFlag('N', 0)
+                        setFlag('H', 0)
+                        setFlag('C', torotate.substring(0, 1).toInt())
+                        var rotated = ""
+                        for (i in 1..7) {
+                            rotated = rotated.plus(torotate.substring(i, i + 1))
+                        }
+                        rotated = rotated.plus(torotate.substring(0, 1))
+                        regDE[0] = Integer.parseInt(rotated, 2)
+                    }
+                    "right" -> {
+                        setFlag('Z', 0)
+                        setFlag('N', 0)
+                        setFlag('H', 0)
+                        setFlag('C', torotate.substring(6, 7).toInt())
+                        var rotated = ""
+                        rotated = rotated.plus(torotate.substring(6, 7))
+                        for (i in 0..6) {
+                            rotated = rotated.plus(torotate.substring(i, i + 1))
+                        }
+                        regDE[0] = Integer.parseInt(rotated, 2)
+                    }
+                }
+            }
+            'E', 'e' -> {
+                val torotate = Integer.toBinaryString(regDE[1]).padStart(8, '0')
+                when (direction) {
+                    "left" -> {
+                        setFlag('Z', 0)
+                        setFlag('N', 0)
+                        setFlag('H', 0)
+                        setFlag('C', torotate.substring(0, 1).toInt())
+                        var rotated = ""
+                        for (i in 1..7) {
+                            rotated = rotated.plus(torotate.substring(i, i + 1))
+                        }
+                        rotated = rotated.plus(torotate.substring(0, 1))
+                        regDE[1] = Integer.parseInt(rotated, 2)
+                    }
+                    "right" -> {
+                        setFlag('Z', 0)
+                        setFlag('N', 0)
+                        setFlag('H', 0)
+                        setFlag('C', torotate.substring(6, 7).toInt())
+                        var rotated = ""
+                        rotated = rotated.plus(torotate.substring(6, 7))
+                        for (i in 0..6) {
+                            rotated = rotated.plus(torotate.substring(i, i + 1))
+                        }
+                        regDE[1] = Integer.parseInt(rotated, 2)
+                    }
+                }
+            }
+            'H', 'h' -> {
+                val torotate = Integer.toBinaryString(regHL[0]).padStart(8, '0')
+                when (direction) {
+                    "left" -> {
+                        setFlag('Z', 0)
+                        setFlag('N', 0)
+                        setFlag('H', 0)
+                        setFlag('C', torotate.substring(0, 1).toInt())
+                        var rotated = ""
+                        for (i in 1..7) {
+                            rotated = rotated.plus(torotate.substring(i, i + 1))
+                        }
+                        rotated = rotated.plus(torotate.substring(0, 1))
+                        regHL[0] = Integer.parseInt(rotated, 2)
+                    }
+                    "right" -> {
+                        setFlag('Z', 0)
+                        setFlag('N', 0)
+                        setFlag('H', 0)
+                        setFlag('C', torotate.substring(6, 7).toInt())
+                        var rotated = ""
+                        rotated = rotated.plus(torotate.substring(6, 7))
+                        for (i in 0..6) {
+                            rotated = rotated.plus(torotate.substring(i, i + 1))
+                        }
+                        regHL[0] = Integer.parseInt(rotated, 2)
+                    }
+                }
+            }
+            'L', 'l' -> {
+                val torotate = Integer.toBinaryString(regHL[1]).padStart(8, '0')
+                when (direction) {
+                    "left" -> {
+                        setFlag('Z', 0)
+                        setFlag('N', 0)
+                        setFlag('H', 0)
+                        setFlag('C', torotate.substring(0, 1).toInt())
+                        var rotated = ""
+                        for (i in 1..7) {
+                            rotated = rotated.plus(torotate.substring(i, i + 1))
+                        }
+                        rotated = rotated.plus(torotate.substring(0, 1))
+                        regHL[1] = Integer.parseInt(rotated, 2)
+                    }
+                    "right" -> {
+                        setFlag('Z', 0)
+                        setFlag('N', 0)
+                        setFlag('H', 0)
+                        setFlag('C', torotate.substring(6, 7).toInt())
+                        var rotated = ""
+                        rotated = rotated.plus(torotate.substring(6, 7))
+                        for (i in 0..6) {
+                            rotated = rotated.plus(torotate.substring(i, i + 1))
+                        }
+                        regHL[1] = Integer.parseInt(rotated, 2)
+                    }
+                }
             }
         }
-        return regAF[0]
     }
     // Print memory contents to csv file for debugging
     fun printMemoryToFile() {
