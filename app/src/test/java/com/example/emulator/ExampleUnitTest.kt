@@ -60,12 +60,82 @@ class GameboyBinaryCalculationTest() {
     @Test
     fun gameboy_test_rotateBits() {
         val gb = GameBoy()
-        val result1 = 0xcf
-        val result2 = 0x2c
 
+        // Testing register A bit rotation
+        val result1A = 0xcf
         gb.regAF[0] = 0xe7
-        assert(gb.rotateBits('A', "left").equals(result1))
+        gb.rotateBits('A', "left")
+        assert(gb.regAF[0].equals(result1A))
+
+        val result2A = 0x2c
         gb.regAF[0] = 0x58
-        assert(gb.rotateBits('A', "right").equals(result2))
+        gb.rotateBits('A', "right")
+        assert(gb.regAF[0].equals(result2A))
+
+        // Testing register B bit rotation
+        val result1B = 0xcf
+        gb.regBC[0] = 0xe7
+        gb.rotateBits('B', "left")
+        assert(gb.regBC[0].equals(result1B))
+
+        val result2B = 0x2c
+        gb.regBC[0] = 0x58
+        gb.rotateBits('B', "right")
+        assert(gb.regBC[0].equals(result2B))
+
+        // Testing register C bit rotation
+        val result1C = 0xcf
+        gb.regBC[1] = 0xe7
+        gb.rotateBits('C', "left")
+        assert(gb.regBC[1].equals(result1C))
+
+        val result2C = 0x2c
+        gb.regBC[1] = 0x58
+        gb.rotateBits('C', "right")
+        assert(gb.regBC[1].equals(result2C))
+
+        // Testing register D bit rotation
+        val result1D = 0xcf
+        gb.regDE[0] = 0xe7
+        gb.rotateBits('D', "left")
+        assert(gb.regDE[0].equals(result1D))
+
+        val result2D = 0x2c
+        gb.regDE[0] = 0x58
+        gb.rotateBits('D', "right")
+        assert(gb.regDE[0].equals(result2D))
+
+        // Testing register E bit rotation
+        val result1E = 0xcf
+        gb.regDE[1] = 0xe7
+        gb.rotateBits('E', "left")
+        assert(gb.regDE[1].equals(result1E))
+
+        val result2E = 0x2c
+        gb.regDE[1] = 0x58
+        gb.rotateBits('E', "right")
+        assert(gb.regDE[1].equals(result2E))
+
+        // Testing register H bit rotation
+        val result1H = 0xcf
+        gb.regHL[0] = 0xe7
+        gb.rotateBits('H', "left")
+        assert(gb.regHL[0].equals(result1H))
+
+        val result2H = 0x2c
+        gb.regHL[0] = 0x58
+        gb.rotateBits('H', "right")
+        assert(gb.regHL[0].equals(result2H))
+
+        // Testing register L bit rotation
+        val result1L = 0xcf
+        gb.regHL[1] = 0xe7
+        gb.rotateBits('L', "left")
+        assert(gb.regHL[1].equals(result1L))
+
+        val result2L = 0x2c
+        gb.regHL[1] = 0x58
+        gb.rotateBits('L', "right")
+        assert(gb.regHL[1].equals(result2L))
     }
 }
