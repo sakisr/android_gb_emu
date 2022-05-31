@@ -318,4 +318,32 @@ class GameboyBinaryCalculationTest() {
         gb.rotateBitsThroughCarry('L', "right")
         assert(gb.regHL[1].equals(result4L))
     }
+    @Test
+    fun gameboy_test_shiftBits() {
+        val gb = GameBoy()
+
+        val result1A = 0xca
+        gb.regAF[0] = 0xe5
+        gb.setFlag('C', 1)
+        gb.shiftBits('A', "left")
+        assert(gb.regAF[0].equals(result1A))
+
+        val result2A = 0xf2
+        gb.regAF[0] = 0xe5
+        gb.setFlag('C', 1)
+        gb.shiftBits('A', "right")
+        assert(gb.regAF[0].equals(result2A))
+
+        val result1M = 0xca
+        gb.memory[gb.bytesToWord(gb.regHL[0],gb.regHL[1])] = 0xe5.toUByte().toByte()
+        gb.setFlag('C', 1)
+        gb.shiftBits('M', "left")
+        assert(gb.memory[gb.bytesToWord(gb.regHL[0],gb.regHL[1])].toUByte().toInt().equals(result1M))
+
+        val result2M = 0xf2
+        gb.memory[gb.bytesToWord(gb.regHL[0],gb.regHL[1])] = 0xe5.toUByte().toByte()
+        gb.setFlag('C', 1)
+        gb.shiftBits('M', "right")
+        assert(gb.memory[gb.bytesToWord(gb.regHL[0],gb.regHL[1])].toUByte().toInt().equals(result2M))
+    }
 }
