@@ -98,9 +98,9 @@ class GameBoy {
                 regPC += 0x01
             }
             // Rotate contents of register A to the left
-            //0x07 -> {
-            //    rotateBits('A', "left")
-            //}
+            0x07 -> {
+                rotateBits('A', "left")
+            }
             // TODO: Test
             // Store first and second bytes of regSP into memory addresses shown by immediate operand
             0x08 -> {
@@ -128,7 +128,10 @@ class GameBoy {
                 regBC[1] = memory[regPC].toUByte().toInt()
                 regPC += 0x01
             }
-            //0x0f ->
+            // Rotate contents of register A to the right
+            0x0f -> {
+                rotateBits('A', "right")
+            }
 
             // STOP
             //0x10 ->
@@ -156,17 +159,18 @@ class GameBoy {
                 regDE[0] = memory[regPC].toInt()
                 regPC += 0x01
             }
-            // Rotate contents of register A to the left
-            //0x17 -> {
-            //    rotateBits('A', "left")
-            //}
+            // Rotate contents of register A to the left through the Carry flag
+            0x17 -> {
+                rotateBitsThroughCarry('A', "left")
+            }
             // TODO: Test
             // Relative jump in Program Counter specified by next byte
             0x18 -> {
                 regPC += memory[regPC].toInt()
             }
             // Add contents of registers DE to registers HL
-            //0x19 ->
+            //0x19 -> {
+            //}
             // Load memory[regDE] into Accumulator register
             0x1a -> {
                 regAF[0] = memory[bytesToWord(regDE[0], regDE[1])].toUByte().toInt()
@@ -185,8 +189,10 @@ class GameBoy {
                 regDE[1] = memory[regPC].toUByte().toInt()
                 regPC += 0x01
             }
-            // Rotate Accumulator Register to the right
-            //0x1f ->
+            // Rotate contents of register A to the right through the Carry flag
+            0x1f -> {
+                rotateBitsThroughCarry('A', "right")
+            }
 
             // Check flag Z, if it equals 0 then add immediate byte to Program Counter, else do nothing
             0x20 -> {
@@ -1031,14 +1037,360 @@ class GameBoy {
     // CB Instructions
     fun cbInstructions(operand: Int) {
         when(operand) {
-            // Set register A bit 0 to 0
-            0x87 -> {
-                setBit(false, 7, 'A')
+            // Rotate registers to the left
+            0x00 -> {
+                rotateBits('B', "left")
+                if(regBC[0] == 0) {
+                    setFlag('Z', 1)
+                }
             }
-            // Set register A bit 6 to 0
-            0xb7 -> {
-                setBit(false, 1, 'A')
+            0x01 -> {
+                rotateBits('C', "left")
+                if(regBC[1] == 0) {
+                    setFlag('Z', 1)
+                }
             }
+            0x02 -> {
+                rotateBits('D', "left")
+                if(regDE[0] == 0) {
+                    setFlag('Z', 1)
+                }
+            }
+            0x03 -> {
+                rotateBits('E', "left")
+                if(regDE[1] == 0) {
+                    setFlag('Z', 1)
+                }
+            }
+            0x04 -> {
+                rotateBits('H', "left")
+                if(regHL[0] == 0) {
+                    setFlag('Z', 1)
+                }
+            }
+            0x05 -> {
+                rotateBits('L', "left")
+                if(regHL[1] == 0) {
+                    setFlag('Z', 1)
+                }
+            }
+            0x06 -> {
+                rotateBits('M', "left")
+                if(memory[bytesToWord(regHL[0], regHL[1])].toUByte().toInt() == 0) {
+                    setFlag('Z', 1)
+                }
+            }
+            0x07 -> {
+                rotateBits('A', "left")
+                if(regAF[0] == 0) {
+                    setFlag('Z', 1)
+                }
+            }
+            // Rotate registers to the right
+            0x08 -> {
+                rotateBits('B', "right")
+                if(regBC[0] == 0) {
+                    setFlag('Z', 1)
+                }
+            }
+            0x09 -> {
+                rotateBits('C', "right")
+                if(regBC[1] == 0) {
+                    setFlag('Z', 1)
+                }
+            }
+            0x0a -> {
+                rotateBits('D', "right")
+                if(regDE[0] == 0) {
+                    setFlag('Z', 1)
+                }
+            }
+            0x0b -> {
+                rotateBits('E', "right")
+                if(regDE[1] == 0) {
+                    setFlag('Z', 1)
+                }
+            }
+            0x0c -> {
+                rotateBits('H', "right")
+                if(regHL[0] == 0) {
+                    setFlag('Z', 1)
+                }
+            }
+            0x0d -> {
+                rotateBits('L', "right")
+                if(regHL[1] == 0) {
+                    setFlag('Z', 1)
+                }
+            }
+            0x0e -> {
+                rotateBits('M', "right")
+                if(memory[bytesToWord(regHL[0], regHL[1])].toUByte().toInt() == 0) {
+                    setFlag('Z', 1)
+                }
+            }
+            0x0f -> {
+                rotateBits('A', "right")
+                if(regAF[0] == 0) {
+                    setFlag('Z', 1)
+                }
+            }
+            // Rotate registers to the left through Carry flag
+            0x10 -> {
+                rotateBitsThroughCarry('B', "left")
+                if(regBC[0] == 0) {
+                    setFlag('Z', 1)
+                }
+            }
+            0x11 -> {
+                rotateBitsThroughCarry('C', "left")
+                if(regBC[1] == 0) {
+                    setFlag('Z', 1)
+                }
+            }
+            0x12 -> {
+                rotateBitsThroughCarry('D', "left")
+                if(regDE[0] == 0) {
+                    setFlag('Z', 1)
+                }
+            }
+            0x13 -> {
+                rotateBitsThroughCarry('E', "left")
+                if(regDE[1] == 0) {
+                    setFlag('Z', 1)
+                }
+            }
+            0x14 -> {
+                rotateBitsThroughCarry('H', "left")
+                if(regHL[0] == 0) {
+                    setFlag('Z', 1)
+                }
+            }
+            0x15 -> {
+                rotateBitsThroughCarry('L', "left")
+                if(regHL[1] == 0) {
+                    setFlag('Z', 1)
+                }
+            }
+            0x16 -> {
+                rotateBitsThroughCarry('M', "left")
+                if(memory[bytesToWord(regHL[0], regHL[1])].toUByte().toInt() == 0) {
+                    setFlag('Z', 1)
+                }
+            }
+            0x17 -> {
+                rotateBitsThroughCarry('A', "left")
+                if(regAF[0] == 0) {
+                    setFlag('Z', 1)
+                }
+            }
+            // Rotate registers to the right through Carry flag
+            0x18 -> {
+                rotateBitsThroughCarry('B', "right")
+                if(regBC[0] == 0) {
+                    setFlag('Z', 1)
+                }
+            }
+            0x19 -> {
+                rotateBitsThroughCarry('C', "right")
+                if(regBC[1] == 0) {
+                    setFlag('Z', 1)
+                }
+            }
+            0x1a -> {
+                rotateBitsThroughCarry('D', "right")
+                if(regDE[0] == 0) {
+                    setFlag('Z', 1)
+                }
+            }
+            0x1b -> {
+                rotateBitsThroughCarry('E', "right")
+                if(regDE[1] == 0) {
+                    setFlag('Z', 1)
+                }
+            }
+            0x1c -> {
+                rotateBitsThroughCarry('H', "right")
+                if(regHL[0] == 0) {
+                    setFlag('Z', 1)
+                }
+            }
+            0x1d -> {
+                rotateBitsThroughCarry('L', "right")
+                if(regHL[1] == 0) {
+                    setFlag('Z', 1)
+                }
+            }
+            0x1e -> {
+                rotateBitsThroughCarry('M', "right")
+                if(memory[bytesToWord(regHL[0], regHL[1])].toUByte().toInt() == 0) {
+                    setFlag('Z', 1)
+                }
+            }
+            0x1f -> {
+                rotateBitsThroughCarry('A', "right")
+                if(regAF[0] == 0) {
+                    setFlag('Z', 1)
+                }
+            }
+
+            // Shift bits of registers to the left through Carry flag
+            0x20 -> shiftBits('B', "left")
+            0x21 -> shiftBits('C', "left")
+            0x22 -> shiftBits('D', "left")
+            0x23 -> shiftBits('E', "left")
+            0x24 -> shiftBits('H', "left")
+            0x25 -> shiftBits('L', "left")
+            0x26 -> shiftBits('M', "left")
+            0x27 -> shiftBits('A', "left")
+            // Shift bits of registers to the right through Carry flag
+            0x28 -> shiftBits('B', "right")
+            0x29 -> shiftBits('C', "right")
+            0x2a -> shiftBits('D', "right")
+            0x2b -> shiftBits('E', "right")
+            0x2c -> shiftBits('H', "right")
+            0x2d -> shiftBits('L', "right")
+            0x2e -> shiftBits('M', "right")
+            0x2f -> shiftBits('A', "right")
+
+            // Reset specified bit to 0 in specified register
+            0x80 -> setBit(false, 7, 'B')
+            0x81 -> setBit(false, 7, 'C')
+            0x82 -> setBit(false, 7, 'D')
+            0x83 -> setBit(false, 7, 'E')
+            0x84 -> setBit(false, 7, 'H')
+            0x85 -> setBit(false, 7, 'L')
+            0x86 -> setBit(false, 7, 'M')
+            0x87 -> setBit(false, 6, 'A')
+            0x88 -> setBit(false, 6, 'B')
+            0x89 -> setBit(false, 6, 'C')
+            0x8a -> setBit(false, 6, 'D')
+            0x8b -> setBit(false, 6, 'E')
+            0x8c -> setBit(false, 6, 'H')
+            0x8d -> setBit(false, 6, 'L')
+            0x8e -> setBit(false, 6, 'M')
+            0x8f -> setBit(false, 6, 'A')
+
+            0x90 -> setBit(false, 5, 'B')
+            0x91 -> setBit(false, 5, 'C')
+            0x92 -> setBit(false, 5, 'D')
+            0x93 -> setBit(false, 5, 'E')
+            0x94 -> setBit(false, 5, 'H')
+            0x95 -> setBit(false, 5, 'L')
+            0x96 -> setBit(false, 5, 'M')
+            0x97 -> setBit(false, 5, 'A')
+            0x98 -> setBit(false, 4, 'B')
+            0x99 -> setBit(false, 4, 'C')
+            0x9a -> setBit(false, 4, 'D')
+            0x9b -> setBit(false, 4, 'E')
+            0x9c -> setBit(false, 4, 'H')
+            0x9d -> setBit(false, 4, 'L')
+            0x9e -> setBit(false, 4, 'M')
+            0x9f -> setBit(false, 4, 'A')
+
+            0xa0 -> setBit(false, 3, 'B')
+            0xa1 -> setBit(false, 3, 'C')
+            0xa2 -> setBit(false, 3, 'D')
+            0xa3 -> setBit(false, 3, 'E')
+            0xa4 -> setBit(false, 3, 'H')
+            0xa5 -> setBit(false, 3, 'L')
+            0xa6 -> setBit(false, 3, 'M')
+            0xa7 -> setBit(false, 3, 'A')
+            0xa8 -> setBit(false, 2, 'B')
+            0xa9 -> setBit(false, 2, 'C')
+            0xaa -> setBit(false, 2, 'D')
+            0xab -> setBit(false, 2, 'E')
+            0xac -> setBit(false, 2, 'H')
+            0xad -> setBit(false, 2, 'L')
+            0xae -> setBit(false, 2, 'M')
+            0xaf -> setBit(false, 2, 'A')
+
+            0xb0 -> setBit(false, 1, 'B')
+            0xb1 -> setBit(false, 1, 'C')
+            0xb2 -> setBit(false, 1, 'D')
+            0xb3 -> setBit(false, 1, 'E')
+            0xb4 -> setBit(false, 1, 'H')
+            0xb5 -> setBit(false, 1, 'L')
+            0xb6 -> setBit(false, 1, 'M')
+            0xb7 -> setBit(false, 1, 'A')
+            0xb8 -> setBit(false, 0, 'B')
+            0xb9 -> setBit(false, 0, 'C')
+            0xba -> setBit(false, 0, 'D')
+            0xbb -> setBit(false, 0, 'E')
+            0xbc -> setBit(false, 0, 'H')
+            0xbd -> setBit(false, 0, 'L')
+            0xbe -> setBit(false, 0, 'M')
+            0xbf -> setBit(false, 0, 'A')
+
+            // Set specified bit to 1 in specified register
+            0xc0 -> setBit(true, 7, 'B')
+            0xc1 -> setBit(true, 7, 'C')
+            0xc2 -> setBit(true, 7, 'D')
+            0xc3 -> setBit(true, 7, 'E')
+            0xc4 -> setBit(true, 7, 'H')
+            0xc5 -> setBit(true, 7, 'L')
+            0xc6 -> setBit(true, 7, 'M')
+            0xc7 -> setBit(true, 6, 'A')
+            0xc8 -> setBit(true, 6, 'B')
+            0xc9 -> setBit(true, 6, 'C')
+            0xca -> setBit(true, 6, 'D')
+            0xcb -> setBit(true, 6, 'E')
+            0xcc -> setBit(true, 6, 'H')
+            0xcd -> setBit(true, 6, 'L')
+            0xce -> setBit(true, 6, 'M')
+            0xcf -> setBit(true, 6, 'A')
+
+            0xd0 -> setBit(true, 5, 'B')
+            0xd1 -> setBit(true, 5, 'C')
+            0xd2 -> setBit(true, 5, 'D')
+            0xd3 -> setBit(true, 5, 'E')
+            0xd4 -> setBit(true, 5, 'H')
+            0xd5 -> setBit(true, 5, 'L')
+            0xd6 -> setBit(true, 5, 'M')
+            0xd7 -> setBit(true, 5, 'A')
+            0xd8 -> setBit(true, 4, 'B')
+            0xd9 -> setBit(true, 4, 'C')
+            0xda -> setBit(true, 4, 'D')
+            0xdb -> setBit(true, 4, 'E')
+            0xdc -> setBit(true, 4, 'H')
+            0xdd -> setBit(true, 4, 'L')
+            0xde -> setBit(true, 4, 'M')
+            0xdf -> setBit(true, 4, 'A')
+
+            0xe0 -> setBit(true, 3, 'B')
+            0xe1 -> setBit(true, 3, 'C')
+            0xe2 -> setBit(true, 3, 'D')
+            0xe3 -> setBit(true, 3, 'E')
+            0xe4 -> setBit(true, 3, 'H')
+            0xe5 -> setBit(true, 3, 'L')
+            0xe6 -> setBit(true, 3, 'M')
+            0xe7 -> setBit(true, 3, 'A')
+            0xe8 -> setBit(true, 2, 'B')
+            0xe9 -> setBit(true, 2, 'C')
+            0xea -> setBit(true, 2, 'D')
+            0xeb -> setBit(true, 2, 'E')
+            0xec -> setBit(true, 2, 'H')
+            0xed -> setBit(true, 2, 'L')
+            0xee -> setBit(true, 2, 'M')
+            0xef -> setBit(true, 2, 'A')
+
+            0xf0 -> setBit(true, 1, 'B')
+            0xf1 -> setBit(true, 1, 'C')
+            0xf2 -> setBit(true, 1, 'D')
+            0xf3 -> setBit(true, 1, 'E')
+            0xf4 -> setBit(true, 1, 'H')
+            0xf5 -> setBit(true, 1, 'L')
+            0xf6 -> setBit(true, 1, 'M')
+            0xf7 -> setBit(true, 1, 'A')
+            0xf8 -> setBit(true, 0, 'B')
+            0xf9 -> setBit(true, 0, 'C')
+            0xfa -> setBit(true, 0, 'D')
+            0xfb -> setBit(true, 0, 'E')
+            0xfc -> setBit(true, 0, 'H')
+            0xfd -> setBit(true, 0, 'L')
+            0xfe -> setBit(true, 0, 'M')
+            0xff -> setBit(true, 0, 'A')
+
             else -> {
                 print("CB instruction 0x" + Integer.toHexString(operand.toUByte().toInt()) + " not implemented\n")
             }
@@ -1761,7 +2113,7 @@ class GameBoy {
             }
         }
     }
-    // Set a bit - Inputs are value (0 or 1), index (0-7) and register (A-F)
+    // Set a bit - Inputs are value (0 or 1), index (0-7) and register (A-F or M for memory[regHL])
     fun setBit(bitValue: Boolean, bitIndex: Int, register: Char) {
         // Convert boolean input to 0 and 1
         var bit: Int
@@ -1806,6 +2158,11 @@ class GameBoy {
                 var register = Integer.toBinaryString(regHL[1]).padStart(8, '0')
                 register = register.substring(0, bitIndex) + bit + register.substring(bitIndex + 1)
                 regAF[1] = Integer.parseInt(register, 2)
+            }
+            'M', 'm' -> {
+                var register = Integer.toBinaryString(memory[bytesToWord(regHL[0],regHL[1])].toUByte().toInt()).padStart(8, '0')
+                register = register.substring(0, bitIndex) + bit + register.substring(bitIndex + 1)
+                memory[bytesToWord(regHL[0],regHL[1])] = Integer.parseInt(register, 2).toUByte().toByte()
             }
         }
     }
@@ -2013,6 +2370,35 @@ class GameBoy {
                             rotated = rotated.plus(torotate.substring(i, i + 1))
                         }
                         regHL[1] = Integer.parseInt(rotated, 2)
+                    }
+                }
+            }
+            'M', 'm' -> {
+                val torotate = Integer.toBinaryString(memory[bytesToWord(regHL[0],regHL[1])].toUByte().toInt()).padStart(8, '0')
+                when (direction) {
+                    "left" -> {
+                        setFlag('Z', 0)
+                        setFlag('N', 0)
+                        setFlag('H', 0)
+                        setFlag('C', torotate.substring(0, 1).toInt())
+                        var rotated = ""
+                        for (i in 1..7) {
+                            rotated = rotated.plus(torotate.substring(i, i + 1))
+                        }
+                        rotated = rotated.plus(torotate.substring(0, 1))
+                        memory[bytesToWord(regHL[0],regHL[1])] = Integer.parseInt(rotated, 2).toUByte().toByte()
+                    }
+                    "right" -> {
+                        setFlag('Z', 0)
+                        setFlag('N', 0)
+                        setFlag('H', 0)
+                        setFlag('C', torotate.substring(6, 7).toInt())
+                        var rotated = ""
+                        rotated = rotated.plus(torotate.substring(6, 7))
+                        for (i in 0..6) {
+                            rotated = rotated.plus(torotate.substring(i, i + 1))
+                        }
+                        memory[bytesToWord(regHL[0],regHL[1])] = Integer.parseInt(rotated, 2).toUByte().toByte()
                     }
                 }
             }
@@ -2224,6 +2610,293 @@ class GameBoy {
                             rotated = rotated.plus(torotate.substring(i, i + 1))
                         }
                         regHL[1] = Integer.parseInt(rotated, 2)
+                    }
+                }
+            }
+        }
+    }
+    // Shifts bits of selected register to selected direction
+    // Carry flag gets set with first bit if rotating to the left, and last bit if rotating to the right
+    // First bit is set to 0 if shifting to the right, last bit if shifting to the left
+    fun shiftBits(registerName: Char, direction: String) {
+        when (registerName) {
+            'A', 'a' -> {
+                val toshift = Integer.toBinaryString(regAF[0]).padStart(8, '0')
+                when (direction) {
+                    "left" -> {
+                        setFlag('Z', 0)
+                        setFlag('N', 0)
+                        setFlag('H', 0)
+                        setFlag('C', toshift.substring(0, 1).toInt())
+                        var shifted = ""
+                        for (i in 1..7) {
+                            shifted = shifted.plus(toshift.substring(i, i + 1))
+                        }
+                        shifted = shifted.plus("0")
+                        regAF[0] = Integer.parseInt(shifted, 2)
+                        if(regAF[0] == 0) {
+                            setFlag('Z', 1)
+                        }
+                    }
+                    "right" -> {
+                        setFlag('Z', 0)
+                        setFlag('N', 0)
+                        setFlag('H', 0)
+                        setFlag('C', toshift.substring(6, 7).toInt())
+                        var shifted = ""
+                        shifted = shifted.plus(toshift.substring(0, 1))
+                        for (i in 0..6) {
+                            shifted = shifted.plus(toshift.substring(i, i + 1))
+                        }
+                        regAF[0] = Integer.parseInt(shifted, 2)
+                        if(regAF[0] == 0) {
+                            setFlag('Z', 1)
+                        }
+                    }
+                }
+            }
+            'B', 'b' -> {
+                val toshift = Integer.toBinaryString(regBC[0]).padStart(8, '0')
+                when (direction) {
+                    "left" -> {
+                        setFlag('Z', 0)
+                        setFlag('N', 0)
+                        setFlag('H', 0)
+                        setFlag('C', toshift.substring(0, 1).toInt())
+                        var shifted = ""
+                        for (i in 1..7) {
+                            shifted = shifted.plus(toshift.substring(i, i + 1))
+                        }
+                        shifted = shifted.plus("0")
+                        regBC[0] = Integer.parseInt(shifted, 2)
+                        if(regBC[0] == 0) {
+                            setFlag('Z', 1)
+                        }
+                    }
+                    "right" -> {
+                        setFlag('Z', 0)
+                        setFlag('N', 0)
+                        setFlag('H', 0)
+                        setFlag('C', toshift.substring(6, 7).toInt())
+                        var shifted = ""
+                        shifted = shifted.plus(toshift.substring(0, 1))
+                        for (i in 0..6) {
+                            shifted = shifted.plus(toshift.substring(i, i + 1))
+                        }
+                        regBC[0] = Integer.parseInt(shifted, 2)
+                        if(regBC[0] == 0) {
+                            setFlag('Z', 1)
+                        }
+                    }
+                }
+            }
+            'C', 'c' -> {
+                val toshift = Integer.toBinaryString(regBC[1]).padStart(8, '0')
+                when (direction) {
+                    "left" -> {
+                        setFlag('Z', 0)
+                        setFlag('N', 0)
+                        setFlag('H', 0)
+                        setFlag('C', toshift.substring(0, 1).toInt())
+                        var shifted = ""
+                        for (i in 1..7) {
+                            shifted = shifted.plus(toshift.substring(i, i + 1))
+                        }
+                        shifted = shifted.plus("0")
+                        regBC[1] = Integer.parseInt(shifted, 2)
+                        if(regBC[1] == 0) {
+                            setFlag('Z', 1)
+                        }
+                    }
+                    "right" -> {
+                        setFlag('Z', 0)
+                        setFlag('N', 0)
+                        setFlag('H', 0)
+                        setFlag('C', toshift.substring(6, 7).toInt())
+                        var shifted = ""
+                        shifted = shifted.plus(toshift.substring(0, 1))
+                        for (i in 0..6) {
+                            shifted = shifted.plus(toshift.substring(i, i + 1))
+                        }
+                        regBC[1] = Integer.parseInt(shifted, 2)
+                        if(regBC[1] == 0) {
+                            setFlag('Z', 1)
+                        }
+                    }
+                }
+            }
+            'D', 'd' -> {
+                val toshift = Integer.toBinaryString(regDE[0]).padStart(8, '0')
+                when (direction) {
+                    "left" -> {
+                        setFlag('Z', 0)
+                        setFlag('N', 0)
+                        setFlag('H', 0)
+                        setFlag('C', toshift.substring(0, 1).toInt())
+                        var shifted = ""
+                        for (i in 1..7) {
+                            shifted = shifted.plus(toshift.substring(i, i + 1))
+                        }
+                        shifted = shifted.plus("0")
+                        regDE[0] = Integer.parseInt(shifted, 2)
+                        if(regDE[0] == 0) {
+                            setFlag('Z', 1)
+                        }
+                    }
+                    "right" -> {
+                        setFlag('Z', 0)
+                        setFlag('N', 0)
+                        setFlag('H', 0)
+                        setFlag('C', toshift.substring(6, 7).toInt())
+                        var shifted = ""
+                        shifted = shifted.plus(toshift.substring(0, 1))
+                        for (i in 0..6) {
+                            shifted = shifted.plus(toshift.substring(i, i + 1))
+                        }
+                        regDE[0] = Integer.parseInt(shifted, 2)
+                        if(regDE[0] == 0) {
+                            setFlag('Z', 1)
+                        }
+                    }
+                }
+            }
+            'E', 'e' -> {
+                val toshift = Integer.toBinaryString(regBC[1]).padStart(8, '0')
+                when (direction) {
+                    "left" -> {
+                        setFlag('Z', 0)
+                        setFlag('N', 0)
+                        setFlag('H', 0)
+                        setFlag('C', toshift.substring(0, 1).toInt())
+                        var shifted = ""
+                        for (i in 1..7) {
+                            shifted = shifted.plus(toshift.substring(i, i + 1))
+                        }
+                        shifted = shifted.plus("0")
+                        regDE[1] = Integer.parseInt(shifted, 2)
+                        if(regDE[1] == 0) {
+                            setFlag('Z', 1)
+                        }
+                    }
+                    "right" -> {
+                        setFlag('Z', 0)
+                        setFlag('N', 0)
+                        setFlag('H', 0)
+                        setFlag('C', toshift.substring(6, 7).toInt())
+                        var shifted = ""
+                        shifted = shifted.plus(toshift.substring(0, 1))
+                        for (i in 0..6) {
+                            shifted = shifted.plus(toshift.substring(i, i + 1))
+                        }
+                        regDE[1] = Integer.parseInt(shifted, 2)
+                        if(regDE[1] == 0) {
+                            setFlag('Z', 1)
+                        }
+                    }
+                }
+            }
+            'H', 'h' -> {
+                val toshift = Integer.toBinaryString(regHL[0]).padStart(8, '0')
+                when (direction) {
+                    "left" -> {
+                        setFlag('Z', 0)
+                        setFlag('N', 0)
+                        setFlag('H', 0)
+                        setFlag('C', toshift.substring(0, 1).toInt())
+                        var shifted = ""
+                        for (i in 1..7) {
+                            shifted = shifted.plus(toshift.substring(i, i + 1))
+                        }
+                        shifted = shifted.plus("0")
+                        regHL[0] = Integer.parseInt(shifted, 2)
+                        if(regHL[0] == 0) {
+                            setFlag('Z', 1)
+                        }
+                    }
+                    "right" -> {
+                        setFlag('Z', 0)
+                        setFlag('N', 0)
+                        setFlag('H', 0)
+                        setFlag('C', toshift.substring(6, 7).toInt())
+                        var shifted = ""
+                        shifted = shifted.plus(toshift.substring(0, 1))
+                        for (i in 0..6) {
+                            shifted = shifted.plus(toshift.substring(i, i + 1))
+                        }
+                        regHL[0] = Integer.parseInt(shifted, 2)
+                        if(regHL[0] == 0) {
+                            setFlag('Z', 1)
+                        }
+                    }
+                }
+            }
+            'L', 'l' -> {
+                val toshift = Integer.toBinaryString(regHL[1]).padStart(8, '0')
+                when (direction) {
+                    "left" -> {
+                        setFlag('Z', 0)
+                        setFlag('N', 0)
+                        setFlag('H', 0)
+                        setFlag('C', toshift.substring(0, 1).toInt())
+                        var shifted = ""
+                        for (i in 1..7) {
+                            shifted = shifted.plus(toshift.substring(i, i + 1))
+                        }
+                        shifted = shifted.plus("0")
+                        regHL[1] = Integer.parseInt(shifted, 2)
+                        if(regHL[1] == 0) {
+                            setFlag('Z', 1)
+                        }
+                    }
+                    "right" -> {
+                        setFlag('Z', 0)
+                        setFlag('N', 0)
+                        setFlag('H', 0)
+                        setFlag('C', toshift.substring(6, 7).toInt())
+                        var shifted = ""
+                        shifted = shifted.plus(toshift.substring(0, 1))
+                        for (i in 0..6) {
+                            shifted = shifted.plus(toshift.substring(i, i + 1))
+                        }
+                        regHL[1] = Integer.parseInt(shifted, 2)
+                        if(regHL[1] == 0) {
+                            setFlag('Z', 1)
+                        }
+                    }
+                }
+            }
+            'M', 'm' -> {
+                val toshift = Integer.toBinaryString(memory[bytesToWord(regHL[0],regHL[1])].toUByte().toInt()).padStart(8, '0')
+                when (direction) {
+                    "left" -> {
+                        setFlag('Z', 0)
+                        setFlag('N', 0)
+                        setFlag('H', 0)
+                        setFlag('C', toshift.substring(0, 1).toInt())
+                        var shifted = ""
+                        for (i in 1..7) {
+                            shifted = shifted.plus(toshift.substring(i, i + 1))
+                        }
+                        shifted = shifted.plus("0")
+                        memory[bytesToWord(regHL[0],regHL[1])] = Integer.parseInt(shifted, 2).toUByte().toByte()
+                        if(memory[bytesToWord(regHL[0],regHL[1])].toUByte().toInt() == 0) {
+                            setFlag('Z', 1)
+                        }
+                    }
+                    "right" -> {
+                        setFlag('Z', 0)
+                        setFlag('N', 0)
+                        setFlag('H', 0)
+                        setFlag('C', toshift.substring(6, 7).toInt())
+                        var shifted = ""
+                        shifted = shifted.plus(toshift.substring(0, 1))
+                        for (i in 0..6) {
+                            shifted = shifted.plus(toshift.substring(i, i + 1))
+                        }
+                        memory[bytesToWord(regHL[0],regHL[1])] = Integer.parseInt(shifted, 2).toUByte().toByte()
+                        if(memory[bytesToWord(regHL[0],regHL[1])].toUByte().toInt() == 0) {
+                            setFlag('Z', 1)
+                        }
                     }
                 }
             }
