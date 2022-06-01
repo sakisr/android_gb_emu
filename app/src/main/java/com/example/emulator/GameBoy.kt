@@ -1243,7 +1243,7 @@ class GameBoy {
             0x25 -> shiftBits('L', "left")
             0x26 -> shiftBits('M', "left")
             0x27 -> shiftBits('A', "left")
-            // Shift bits of registers to the right through Carry flag
+            // Shift bits of registers to the right through Carry flag, first bit is unchanged
             0x28 -> shiftBits('B', "right")
             0x29 -> shiftBits('C', "right")
             0x2a -> shiftBits('D', "right")
@@ -1252,6 +1252,25 @@ class GameBoy {
             0x2d -> shiftBits('L', "right")
             0x2e -> shiftBits('M', "right")
             0x2f -> shiftBits('A', "right")
+
+            // Swap bits 0-3 with bits 4-7
+            0x30 -> swapBits('B')
+            0x31 -> swapBits('C')
+            0x32 -> swapBits('D')
+            0x33 -> swapBits('E')
+            0x34 -> swapBits('H')
+            0x35 -> swapBits('L')
+            0x36 -> swapBits('M')
+            0x37 -> swapBits('A')
+            // Shift bits of registers to the right through Carry flag, first bit changes to 0
+            0x38 -> shiftBitsRightWithZero('B')
+            0x39 -> shiftBitsRightWithZero('C')
+            0x3a -> shiftBitsRightWithZero('D')
+            0x3b -> shiftBitsRightWithZero('E')
+            0x3c -> shiftBitsRightWithZero('H')
+            0x3d -> shiftBitsRightWithZero('L')
+            0x3e -> shiftBitsRightWithZero('M')
+            0x3f -> shiftBitsRightWithZero('A')
 
             // Reset specified bit to 0 in specified register
             0x80 -> setBit(false, 7, 'B')
@@ -2617,7 +2636,7 @@ class GameBoy {
     }
     // Shifts bits of selected register to selected direction
     // Carry flag gets set with first bit if rotating to the left, and last bit if rotating to the right
-    // First bit is set to 0 if shifting to the right, last bit if shifting to the left
+    // First bit is unchanged if shifting to the right, last bit is 0 if shifting to the left
     fun shiftBits(registerName: Char, direction: String) {
         when (registerName) {
             'A', 'a' -> {
@@ -2899,6 +2918,266 @@ class GameBoy {
                         }
                     }
                 }
+            }
+        }
+    }
+    // Shifts bits of selected register to the right
+    // Carry flag gets set with last bit
+    // First bit is set to 0
+    fun shiftBitsRightWithZero(registerName: Char) {
+        when (registerName) {
+            'A', 'a' -> {
+                val toshift = Integer.toBinaryString(regAF[0]).padStart(8, '0')
+                setFlag('Z', 0)
+                setFlag('N', 0)
+                setFlag('H', 0)
+                setFlag('C', toshift.substring(6, 7).toInt())
+                var shifted = ""
+                shifted = shifted.plus("0")
+                for (i in 0..6) {
+                    shifted = shifted.plus(toshift.substring(i, i + 1))
+                }
+                regAF[0] = Integer.parseInt(shifted, 2)
+                if(regAF[0] == 0) {
+                    setFlag('Z', 1)
+                }
+            }
+            'B', 'b' -> {
+                val toshift = Integer.toBinaryString(regBC[0]).padStart(8, '0')
+                setFlag('Z', 0)
+                setFlag('N', 0)
+                setFlag('H', 0)
+                setFlag('C', toshift.substring(6, 7).toInt())
+                var shifted = ""
+                shifted = shifted.plus("0")
+                for (i in 0..6) {
+                    shifted = shifted.plus(toshift.substring(i, i + 1))
+                }
+                regBC[0] = Integer.parseInt(shifted, 2)
+                if(regBC[0] == 0) {
+                    setFlag('Z', 1)
+                }
+            }
+            'C', 'c' -> {
+                val toshift = Integer.toBinaryString(regBC[1]).padStart(8, '0')
+                setFlag('Z', 0)
+                setFlag('N', 0)
+                setFlag('H', 0)
+                setFlag('C', toshift.substring(6, 7).toInt())
+                var shifted = ""
+                shifted = shifted.plus("0")
+                for (i in 0..6) {
+                    shifted = shifted.plus(toshift.substring(i, i + 1))
+                }
+                regBC[1] = Integer.parseInt(shifted, 2)
+                if(regBC[1] == 0) {
+                    setFlag('Z', 1)
+                }
+            }
+            'D', 'd' -> {
+                val toshift = Integer.toBinaryString(regDE[0]).padStart(8, '0')
+                setFlag('Z', 0)
+                setFlag('N', 0)
+                setFlag('H', 0)
+                setFlag('C', toshift.substring(6, 7).toInt())
+                var shifted = ""
+                shifted = shifted.plus("0")
+                for (i in 0..6) {
+                    shifted = shifted.plus(toshift.substring(i, i + 1))
+                }
+                regDE[0] = Integer.parseInt(shifted, 2)
+                if(regDE[0] == 0) {
+                    setFlag('Z', 1)
+                }
+            }
+            'E', 'e' -> {
+                val toshift = Integer.toBinaryString(regDE[1]).padStart(8, '0')
+                setFlag('Z', 0)
+                setFlag('N', 0)
+                setFlag('H', 0)
+                setFlag('C', toshift.substring(6, 7).toInt())
+                var shifted = ""
+                shifted = shifted.plus("0")
+                for (i in 0..6) {
+                    shifted = shifted.plus(toshift.substring(i, i + 1))
+                }
+                regDE[1] = Integer.parseInt(shifted, 2)
+                if(regDE[1] == 0) {
+                    setFlag('Z', 1)
+                }
+            }
+            'H', 'h' -> {
+                val toshift = Integer.toBinaryString(regHL[0]).padStart(8, '0')
+                setFlag('Z', 0)
+                setFlag('N', 0)
+                setFlag('H', 0)
+                setFlag('C', toshift.substring(6, 7).toInt())
+                var shifted = ""
+                shifted = shifted.plus("0")
+                for (i in 0..6) {
+                    shifted = shifted.plus(toshift.substring(i, i + 1))
+                }
+                regHL[0] = Integer.parseInt(shifted, 2)
+                if(regHL[0] == 0) {
+                    setFlag('Z', 1)
+                }
+            }
+            'L', 'l' -> {
+                val toshift = Integer.toBinaryString(regHL[1]).padStart(8, '0')
+                setFlag('Z', 0)
+                setFlag('N', 0)
+                setFlag('H', 0)
+                setFlag('C', toshift.substring(6, 7).toInt())
+                var shifted = ""
+                shifted = shifted.plus("0")
+                for (i in 0..6) {
+                    shifted = shifted.plus(toshift.substring(i, i + 1))
+                }
+                regHL[1] = Integer.parseInt(shifted, 2)
+                if(regHL[1] == 0) {
+                    setFlag('Z', 1)
+                }
+            }
+            'M', 'm' -> {
+                val toshift = Integer.toBinaryString(memory[bytesToWord(regHL[0],regHL[1])].toUByte().toInt()).padStart(8, '0')
+                setFlag('Z', 0)
+                setFlag('N', 0)
+                setFlag('H', 0)
+                setFlag('C', toshift.substring(6, 7).toInt())
+                var shifted = ""
+                shifted = shifted.plus("0")
+                for (i in 0..6) {
+                    shifted = shifted.plus(toshift.substring(i, i + 1))
+                }
+                memory[bytesToWord(regHL[0],regHL[1])] = Integer.parseInt(shifted, 2).toUByte().toByte()
+                if(memory[bytesToWord(regHL[0],regHL[1])].toUByte().toInt() == 0) {
+                    setFlag('Z', 1)
+                }
+            }
+        }
+    }
+    // Swap bits 0-3 with bits 4-7 in selected register
+    fun swapBits(register: Char) {
+        when(register) {
+            'A','a' -> {
+                if(regAF[0] == 0) {
+                    setFlag('Z', 1)
+                } else {
+                    setFlag('Z', 0)
+                }
+                setFlag('N', 0)
+                setFlag('H', 0)
+                setFlag('C', 0)
+                var swapped = ""
+                val preswap = Integer.toBinaryString(regAF[0]).padStart(8, '0')
+                swapped = swapped.plus(preswap.substring(4,8))
+                swapped = swapped.plus(preswap.substring(0,4))
+                regAF[0] = Integer.parseInt(swapped, 2)
+            }
+            'B','b' -> {
+                if(regBC[0] == 0) {
+                    setFlag('Z', 1)
+                } else {
+                    setFlag('Z', 0)
+                }
+                setFlag('N', 0)
+                setFlag('H', 0)
+                setFlag('C', 0)
+                var swapped = ""
+                val preswap = Integer.toBinaryString(regBC[0]).padStart(8, '0')
+                swapped = swapped.plus(preswap.substring(4,8))
+                swapped = swapped.plus(preswap.substring(0,4))
+                regBC[0] = Integer.parseInt(swapped, 2)
+            }
+            'C','c' -> {
+                if(regBC[1] == 0) {
+                    setFlag('Z', 1)
+                } else {
+                    setFlag('Z', 0)
+                }
+                setFlag('N', 0)
+                setFlag('H', 0)
+                setFlag('C', 0)
+                var swapped = ""
+                val preswap = Integer.toBinaryString(regBC[1]).padStart(8, '0')
+                swapped = swapped.plus(preswap.substring(4,8))
+                swapped = swapped.plus(preswap.substring(0,4))
+                regBC[1] = Integer.parseInt(swapped, 2)
+            }
+            'D','d' -> {
+                if(regDE[0] == 0) {
+                    setFlag('Z', 1)
+                } else {
+                    setFlag('Z', 0)
+                }
+                setFlag('N', 0)
+                setFlag('H', 0)
+                setFlag('C', 0)
+                var swapped = ""
+                val preswap = Integer.toBinaryString(regDE[0]).padStart(8, '0')
+                swapped = swapped.plus(preswap.substring(4,8))
+                swapped = swapped.plus(preswap.substring(0,4))
+                regDE[0] = Integer.parseInt(swapped, 2)
+            }
+            'E','e' -> {
+                if(regDE[1] == 0) {
+                    setFlag('Z', 1)
+                } else {
+                    setFlag('Z', 0)
+                }
+                setFlag('N', 0)
+                setFlag('H', 0)
+                setFlag('C', 0)
+                var swapped = ""
+                val preswap = Integer.toBinaryString(regDE[1]).padStart(8, '0')
+                swapped = swapped.plus(preswap.substring(4,8))
+                swapped = swapped.plus(preswap.substring(0,4))
+                regDE[1] = Integer.parseInt(swapped, 2)
+            }
+            'H','h' -> {
+                if(regHL[0] == 0) {
+                    setFlag('Z', 1)
+                } else {
+                    setFlag('Z', 0)
+                }
+                setFlag('N', 0)
+                setFlag('H', 0)
+                setFlag('C', 0)
+                var swapped = ""
+                val preswap = Integer.toBinaryString(regHL[0]).padStart(8, '0')
+                swapped = swapped.plus(preswap.substring(4,8))
+                swapped = swapped.plus(preswap.substring(0,4))
+                regHL[0] = Integer.parseInt(swapped, 2)
+            }
+            'L','l' -> {
+                if(regHL[1] == 0) {
+                    setFlag('Z', 1)
+                } else {
+                    setFlag('Z', 0)
+                }
+                setFlag('N', 0)
+                setFlag('H', 0)
+                setFlag('C', 0)
+                var swapped = ""
+                val preswap = Integer.toBinaryString(regHL[1]).padStart(8, '0')
+                swapped = swapped.plus(preswap.substring(4,8))
+                swapped = swapped.plus(preswap.substring(0,4))
+                regHL[1] = Integer.parseInt(swapped, 2)
+            }
+            'M','m' -> {
+                if(memory[bytesToWord(regHL[0], regHL[1])].toUByte().toInt() == 0) {
+                    setFlag('Z', 1)
+                } else {
+                    setFlag('Z', 0)
+                }
+                setFlag('N', 0)
+                setFlag('H', 0)
+                setFlag('C', 0)
+                var swapped = ""
+                val preswap = Integer.toBinaryString(memory[bytesToWord(regHL[0], regHL[1])].toUByte().toInt()).padStart(8, '0')
+                swapped = swapped.plus(preswap.substring(4,8))
+                swapped = swapped.plus(preswap.substring(0,4))
+                memory[bytesToWord(regHL[0], regHL[1])] = Integer.parseInt(swapped, 2).toUByte().toByte()
             }
         }
     }
