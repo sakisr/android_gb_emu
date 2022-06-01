@@ -334,6 +334,11 @@ class GameboyBinaryCalculationTest() {
         gb.shiftBits('A', "right")
         assert(gb.regAF[0].equals(result2A))
 
+        val result3A = 0x72
+        gb.regAF[0] = 0xe5
+        gb.shiftBitsRightWithZero('A')
+        assert(gb.regAF[0].equals(result3A))
+
         val result1M = 0xca
         gb.memory[gb.bytesToWord(gb.regHL[0],gb.regHL[1])] = 0xe5.toUByte().toByte()
         gb.setFlag('C', 1)
@@ -345,5 +350,49 @@ class GameboyBinaryCalculationTest() {
         gb.setFlag('C', 1)
         gb.shiftBits('M', "right")
         assert(gb.memory[gb.bytesToWord(gb.regHL[0],gb.regHL[1])].toUByte().toInt().equals(result2M))
+    }
+    @Test
+    fun gameboy_test_swapbits() {
+        val gb = GameBoy()
+
+        val resultA = 0xf0
+        gb.regAF[0] = 0x0f
+        gb.swapBits('A')
+        assert(gb.regAF[0].equals(resultA))
+
+        val resultB = 0xf0
+        gb.regBC[0] = 0x0f
+        gb.swapBits('B')
+        assert(gb.regBC[0].equals(resultB))
+
+        val resultC = 0xf0
+        gb.regBC[1] = 0x0f
+        gb.swapBits('C')
+        assert(gb.regBC[1].equals(resultC))
+
+        val resultD = 0xf0
+        gb.regDE[0] = 0x0f
+        gb.swapBits('D')
+        assert(gb.regDE[0].equals(resultD))
+
+        val resultE = 0xf0
+        gb.regDE[1] = 0x0f
+        gb.swapBits('E')
+        assert(gb.regDE[1].equals(resultE))
+
+        val resultH = 0xf0
+        gb.regHL[0] = 0x0f
+        gb.swapBits('H')
+        assert(gb.regHL[0].equals(resultH))
+
+        val resultL = 0x0f
+        gb.regHL[1] = 0xf0
+        gb.swapBits('L')
+        assert(gb.regHL[1].equals(resultL))
+
+        val resultM = 0xf0
+        gb.memory[gb.bytesToWord(gb.regHL[0],gb.regHL[1])] = 0x0f.toUByte().toByte()
+        gb.swapBits('M')
+        assert(gb.memory[gb.bytesToWord(gb.regHL[0],gb.regHL[1])].toUByte().toInt().equals(resultM))
     }
 }
